@@ -1,0 +1,4 @@
+www/_site
+.mypy_cache
+.ruff_cache
+__pycache__/

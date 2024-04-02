@@ -1,0 +1,55 @@
+site_name: "shiny-pyseed"
+site_url: "https://jkoushik.me/shiny-pyseed"
+repo_url: "https://github.com/jayanthkoushik/shiny-pyseed"
+site_description: "Documentation for 'shiny-pyseed'."
+site_author: "Jayanth Koushik"
+copyright: "Copyright (c) Jayanth Koushik"
+
+docs_dir: www/src
+site_dir: www/_site
+
+nav:
+  - Home:
+      - index.md
+      - License: LICENSE.md
+      - Changelog: CHANGELOG.md
+
+plugins:
+  - mike:
+      canonical_version: latest
+
+markdown_extensions:
+  - smarty
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - pymdownx.caret
+  - pymdownx.betterem:
+      smart_enable: all
+  - toc:
+      permalink: true
+
+extra:
+  version:
+    provider: mike
+
+theme:
+  name: material
+  custom_dir: www/theme/overrides
+  features:
+    - content.code.copy
+    - navigation.instant
+    - navigation.instant.progres
+    - navigation.tabs
+    - navigation.indexes
+    - navigation.top
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/weather-night
+        name: Switch to light mode

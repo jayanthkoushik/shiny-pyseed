@@ -1,0 +1,72 @@
+default_install_hook_types: [pre-commit, commit-msg]
+default_stages: [pre-commit]
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: check-case-conflict
+      - id: check-symlinks
+      - id: destroyed-symlinks
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+      - id: trailing-whitespace
+      - id: check-json
+      - id: check-toml
+      - id: check-xml
+      - id: check-yaml
+      - id: pretty-format-json
+        args: ["--autofix", "--no-sort-keys"]
+      - id: check-merge-conflict
+      - id: check-vcs-permalinks
+      - id: detect-private-key
+
+  - repo: https://github.com/streetsidesoftware/cspell-cli
+    rev: v8.6.1
+    hooks:
+      - id: cspell
+        name: Spell check readme
+        files: "README.md"
+
+  - repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook
+    rev: v9.13.0
+    hooks:
+      - id: commitlint
+        name: Lint commit message
+        entry: commitlint -e -s
+        stages: [commit-msg]
+        additional_dependencies:
+          - "@commitlint/config-conventional"
+      - id: commitlint
+        name: Lint commit message from file in $COMMIT_MSG_FILE
+        entry: commitlint -E COMMIT_MSG_FILE -s
+        stages: [manual]
+        additional_dependencies:
+          - "@commitlint/config-conventional"
+
+  - repo: local
+    hooks:
+      - id: format
+        name: Format Python files
+        language: system
+        entry: poetry run ruff format
+        types: [python]
+      - id: lint
+        name: Lint Python files
+        language: system
+        entry: poetry run ruff check
+        types: [python]
+        pass_filenames: false
+      - id: mypy
+        name: Type check Python files
+        entry: poetry run mypy src tests
+        language: system
+        types: [python]
+        pass_filenames: false
+      - id: test
+        name: Run unit tests
+        language: system
+        entry: python3 -m unittest
+        types: [python]
+        exclude: "scripts/.*\\.py"
+        pass_filenames: false
