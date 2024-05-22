@@ -3,7 +3,7 @@ import os
 import sys
 import textwrap
 from argparse import ArgumentError, ArgumentParser
-from contextlib import contextmanager, suppress
+from contextlib import contextmanager
 from enum import Enum
 from io import StringIO
 from pathlib import Path
@@ -42,8 +42,7 @@ def inside_temp_dir():
         yield temp_dir.name
     finally:
         os.chdir(pwd_abs)
-        with suppress(OSError):
-            temp_dir.cleanup()
+        temp_dir.cleanup()
 
 
 @contextmanager
@@ -57,8 +56,7 @@ def inside_temp_poetry_dir():
         yield temp_dir.name
     finally:
         os.chdir(pwd_abs)
-        with suppress(OSError):
-            temp_dir.cleanup()
+        temp_dir.cleanup()
 
 
 class TestGetGitUser(TestCase):
@@ -630,8 +628,7 @@ class _BaseTestCreateProject(TestCase):
 
     def tearDown(self):
         os.chdir(pwd_abs)
-        with contextlib.suppress(OSError):
-            self.tempdir.cleanup()
+        self.tempdir.cleanup()
 
 
 @skipUnless(
