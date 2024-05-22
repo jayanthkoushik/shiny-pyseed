@@ -39,3 +39,4 @@ jobs:
           UNITTEST_ARGS: ${{ inputs.fail-fast && '-vf' || '-v' }}
           PYSEED_TEST_CREATE_PROJECT: 1
           GITHUB_TOKEN: ${{ secrets.REPO_PAT }}
+          RUFF_NO_CACHE: true
