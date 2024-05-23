@@ -1,5 +1,6 @@
 import contextlib
 import os
+import subprocess
 import sys
 import textwrap
 from argparse import ArgumentError, ArgumentParser
@@ -62,7 +63,7 @@ def inside_temp_poetry_dir():
 class TestGetGitUser(TestCase):
     def test_get_git_user_returns_configured_value(self):
         with inside_temp_dir():
-            pyseed.vrun(["git", "init"])
+            subprocess.run(["git", "init", "-q"], check=True)
             with (Path(".git") / "config").open("w") as f:
                 print(
                     textwrap.dedent("""\
