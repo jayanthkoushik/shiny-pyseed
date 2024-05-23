@@ -1760,4 +1760,10 @@ this page.
 
 
 if __name__ == "__main__":
+    if len(sys.argv) <= 1 and not sys.stdin.isatty():
+        try:
+            sys.stdin = open("/dev/tty", mode="r")  # noqa: SIM115
+        except OSError:
+            print("could not open tty for interactive config", file=sys.stderr)
+            sys.exit(1)
     main()
