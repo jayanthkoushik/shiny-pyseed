@@ -218,6 +218,52 @@ class TestGetInput(TestCase):
         )
         self.assertEqual(inp, "hello, world")
 
+    def test_tty_stdin_is_noop_if_not_ensure_tty(self):
+        mock_stdin = StringIO()
+        with (
+            patch("sys.stdin", mock_stdin),
+            patch("pyseed.ensure_tty", False),
+            pyseed.tty_stdin(),
+        ):
+            self.assertIs(sys.stdin, mock_stdin)
+
+    def test_tty_stdin_is_noop_if_stdin_is_tty(self):
+        mock_stdin = MagicMock()
+        mock_stdin.isatty = MagicMock(return_value=True)
+        with (
+            patch("sys.stdin", mock_stdin),
+            patch("pyseed.ensure_tty", True),
+            pyseed.tty_stdin(),
+        ):
+            self.assertIs(sys.stdin, mock_stdin)
+
+    @skipUnless(os.path.exists("/dev/tty"), "need /dev/tty")
+    def test_tty_stdin_redirects_stdin_in_context(self):
+        mock_stdin = StringIO()
+        with patch("sys.stdin", mock_stdin):
+            with patch("pyseed.ensure_tty", True), pyseed.tty_stdin():
+                self.assertIsNot(sys.stdin, mock_stdin)
+                self.assertTrue(sys.stdin.isatty())
+            self.assertIs(sys.stdin, mock_stdin)
+
+    def test_get_input_reads_input_within_tty_stdin_context(self):
+        mock_stdin = StringIO("hello, world")
+
+        @contextmanager
+        def mock_tty_stdin():
+            try:
+                sys.stdin = StringIO("goodbye, world")
+                yield
+            finally:
+                sys.stdin = mock_stdin
+
+        with (
+            patch.multiple("sys", stdin=mock_stdin, stdout=StringIO()),
+            patch("pyseed.tty_stdin", mock_tty_stdin),
+        ):
+            inp = pyseed.get_input("")
+        self.assertEqual(inp, "goodbye, world")
+
 
 class TestGetYesNoInput(TestCase):
     def test_get_yes_no_input_returns_bool(self):
@@ -422,8 +468,7 @@ class TestGetConf(TestCase):
             patch("pyseed.ConfigKey", self.DummyConfigKey),
             patch.multiple("sys", stdin=mock_stdin, stdout=StringIO()),
         ):
-            config_mode, config = pyseed.get_conf_interactively()
-        self.assertEqual(config_mode, pyseed.ConfigMode.interactive)
+            config = pyseed.get_conf_interactively()
         self.assertDictEqual(
             config,
             {
@@ -442,7 +487,7 @@ class TestGetConf(TestCase):
                 patch("pyseed.ConfigKey", self.DummyConfigKey),
                 patch.multiple("sys", stdin=StringIO("\n"), stdout=mock_stdout),
             ):
-                _, config = pyseed.get_conf_interactively(base_config)  # type: ignore
+                config = pyseed.get_conf_interactively(base_config)  # type: ignore
             mock_stdout.seek(0)
             self.assertEqual(mock_stdout.read().strip(), "")
             self.assertDictEqual(config, base_config)
@@ -460,7 +505,7 @@ class TestGetConf(TestCase):
                 "sys", stdin=StringIO("project-name\n\n"), stdout=StringIO()
             ),
         ):
-            _, config = pyseed.get_conf_interactively()
+            config = pyseed.get_conf_interactively()
         self.assertDictEqual(
             config,
             {
@@ -469,15 +514,15 @@ class TestGetConf(TestCase):
             },
         )
 
-    def test_get_conf_from_cmdargs_returns_dict_with_config_keys(self):
-        mock_argparser = self._get_patched_argparser(
-            ["--dummy-str-key", "hello, world", "--no-dummy-bool-key"]
-        )
+    def test_parse_cmdline_args_returns_dict_with_config_keys(self):
+        argv = ["--dummy-str-key", "hello, world", "--no-dummy-bool-key"]
+        mock_argparser = self._get_patched_argparser(argv)
         with (
+            patch("sys.argv", argv),
             patch("pyseed.ConfigKey", self.DummyConfigKey),
             patch("pyseed.ArgumentParser", MagicMock(return_value=mock_argparser)),
         ):
-            config_mode, config = pyseed.get_conf_from_cmdargs()
+            config_mode, config = pyseed.parse_cmdline_args()
         self.assertEqual(config_mode, pyseed.ConfigMode.non_interactive)
         self.assertDictEqual(
             config,
@@ -487,25 +532,34 @@ class TestGetConf(TestCase):
             },
         )
 
-    def test_get_conf_from_cmdargs_uses_interactive_mode_on_minus_i_arg(self):
+    def test_parse_cmdline_args_detects_interactive_mode_on_minus_i_arg(self):
         for iarg in ["-i", "-si", "-is", "--interactive"]:
             with self.subTest(iarg):
                 with (
                     patch("pyseed.ConfigKey", self.DummyConfigKey),
                     patch("pyseed.sys.argv", [iarg, "--no-dummy-bool-key"]),
-                    patch.multiple(
-                        "sys", stdin=StringIO("hello, world"), stdout=StringIO()
-                    ),
+                    patch("sys.stdout", StringIO()),
                 ):
-                    config_mode, config = pyseed.get_conf_from_cmdargs()
+                    config_mode, config = pyseed.parse_cmdline_args()
                 self.assertEqual(config_mode, pyseed.ConfigMode.interactive)
                 self.assertDictEqual(
-                    config,
-                    {
-                        self.DummyConfigKey.dummy_str_key: "hello, world",
-                        self.DummyConfigKey.dummy_bool_key: False,
-                    },
+                    config, {self.DummyConfigKey.dummy_bool_key: False}
                 )
+
+    def test_get_conf_combines_cmdline_and_interactive_config(self):
+        with (
+            patch("pyseed.ConfigKey", self.DummyConfigKey),
+            patch("pyseed.sys.argv", ["-i", "--no-dummy-bool-key"]),
+            patch.multiple("sys", stdin=StringIO("hello, world"), stdout=StringIO()),
+        ):
+            _, config = pyseed.get_conf()
+        self.assertDictEqual(
+            config,
+            {
+                self.DummyConfigKey.dummy_bool_key: False,
+                self.DummyConfigKey.dummy_str_key: "hello, world",
+            },
+        )
 
     def test_get_conf_sets_main_pkg_if_not_provided(self):
         class DummyConfigKey(Enum):
