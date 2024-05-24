@@ -52,6 +52,7 @@ from urllib.parse import urlparse
 
 verbose = True
 pwd_abs = Path(os.curdir).absolute()
+ensure_tty = False
 
 
 ########################################################################
@@ -166,6 +167,25 @@ def validate_string_url(inp: str) -> Optional[str]:
 
 ########################################################################
 # FUNCTIONS FOR GETTING USER INPUT INTERACTIVELY
+# If the global `ensure_tty` is `True`, and `sys.stdin` is not a tty,
+# `/dev/tty` is explicitly opened to read input. There is no support
+# for Windows.
+
+
+@contextmanager
+def tty_stdin():
+    if not ensure_tty or sys.stdin.isatty():
+        yield
+        return
+    if not os.path.exists("/dev/tty"):
+        raise OSError("tty not available for reading input")
+    old_stdin = sys.stdin
+    try:
+        sys.stdin = open("/dev/tty", mode="r")  # noqa: SIM115
+        yield
+    finally:
+        sys.stdin.close()
+        sys.stdin = old_stdin
 
 
 def get_input(
@@ -177,10 +197,11 @@ def get_input(
         prompt += f" [default: '{default}']"
     prompt += ": "
     while True:
-        try:
-            inp = input(prompt)
-        except KeyboardInterrupt:
-            sys.exit(1)
+        with tty_stdin():
+            try:
+                inp = input(prompt)
+            except KeyboardInterrupt:
+                sys.exit(1)
         if not inp and default is not None:
             inp = default
         inp = inp.strip()
@@ -510,34 +531,9 @@ class ConfigMode(Enum):
     non_interactive = 1
 
 
-def get_conf_interactively(
-    base_config: Optional[dict[ConfigKey, Any]] = None,
-) -> tuple[ConfigMode, dict[ConfigKey, Any]]:
-    config: dict[ConfigKey, Any] = base_config.copy() if base_config is not None else {}
-    for config_key in ConfigKey:
-        if config_key not in config:
-            config_val = config_key.value.get_value_interactively()
-            config[config_key] = config_val
-        try:
-            if config_key == ConfigKey.project:
-                project_name = Path(config[ConfigKey.project]).stem
-                ConfigKey.main_pkg.value.default = project_name.replace("-", "_")
-        except AttributeError:
-            continue
-    return (ConfigMode.interactive, config)
-
-
-def get_conf_from_cmdargs() -> tuple[ConfigMode, dict[ConfigKey, Any]]:
-    argparser = ArgumentParser()
-    argparser.add_argument(
-        "-i",
-        "--interactive",
-        help="configure project creation interactively",
-        action="store_true",
-    )
-    argparser.add_argument(
-        "-s", "--silent", help="suppress output", action="store_true"
-    )
+def parse_cmdline_args() -> tuple[ConfigMode, Optional[dict[ConfigKey, Any]]]:
+    if len(sys.argv) <= 1:
+        return (ConfigMode.interactive, None)
 
     config_mode = (
         ConfigMode.interactive
@@ -551,6 +547,17 @@ def get_conf_from_cmdargs() -> tuple[ConfigMode, dict[ConfigKey, Any]]:
             )
         )
         else ConfigMode.non_interactive
+    )
+
+    argparser = ArgumentParser()
+    argparser.add_argument(
+        "-i",
+        "--interactive",
+        help="configure project creation interactively",
+        action="store_true",
+    )
+    argparser.add_argument(
+        "-s", "--silent", help="suppress output", action="store_true"
     )
 
     for config_key in ConfigKey:
@@ -573,16 +580,34 @@ def get_conf_from_cmdargs() -> tuple[ConfigMode, dict[ConfigKey, Any]]:
         if config_mode != ConfigMode.interactive or config_val is not None:
             config[config_key] = config_val
 
-    if config_mode == ConfigMode.interactive:
-        return get_conf_interactively(base_config=config)
-    return (ConfigMode.non_interactive, config)
+    return (config_mode, config)
+
+
+def get_conf_interactively(
+    base_config: Optional[dict[ConfigKey, Any]] = None,
+) -> dict[ConfigKey, Any]:
+    config: dict[ConfigKey, Any] = base_config.copy() if base_config is not None else {}
+    for config_key in ConfigKey:
+        if config_key not in config:
+            config_val = config_key.value.get_value_interactively()
+            config[config_key] = config_val
+        try:
+            if config_key == ConfigKey.project:
+                project_name = Path(config[ConfigKey.project]).stem
+                ConfigKey.main_pkg.value.default = project_name.replace("-", "_")
+        except AttributeError:
+            continue
+    return config
 
 
 def get_conf() -> tuple[ConfigMode, dict[ConfigKey, Any]]:
-    if len(sys.argv) > 1:
-        config_mode, config = get_conf_from_cmdargs()
+    config_mode, base_config = parse_cmdline_args()
+    if config_mode == ConfigMode.interactive:
+        config = get_conf_interactively(base_config)
+    elif base_config is not None:
+        config = base_config
     else:
-        config_mode, config = get_conf_interactively()
+        config = {}
 
     try:
         if not config[ConfigKey.main_pkg]:
@@ -844,7 +869,7 @@ def setup_github(config: dict[ConfigKey, Any]):
         print(mkdocs_data, file=f, end="")
 
     vrun(["git", "add", "pyproject.toml", "mkdocs.yml"])
-    vrun(["git", "commit", "--amend", "--no-edit"], check=False)
+    vrun(["git", "commit", "--amend", "--no-edit"])
     vrun(["git", "remote", "add", "origin", repo_origin])
     vrun(["git", "push", "-u", "origin", "master"])
 
@@ -959,7 +984,8 @@ def main():
 PYPROJECT_TEMPLATE = """\
 [tool.poetry]
 name = {name_dump}
-version = "0.0.0" # managed by `poetry-dynamic-versioning`
+# version is managed by `poetry-dynamic-versioning`
+version = "0.0.0"
 description = {description_dump}
 authors = {authors_dump}
 license = "{license}"
@@ -1760,10 +1786,5 @@ this page.
 
 
 if __name__ == "__main__":
-    if len(sys.argv) <= 1 and not sys.stdin.isatty():
-        try:
-            sys.stdin = open("/dev/tty", mode="r")  # noqa: SIM115
-        except OSError:
-            print("could not open tty for interactive config", file=sys.stderr)
-            sys.exit(1)
+    ensure_tty = True
     main()
