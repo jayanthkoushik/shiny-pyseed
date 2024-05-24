@@ -844,7 +844,7 @@ def setup_github(config: dict[ConfigKey, Any]):
         print(mkdocs_data, file=f, end="")
 
     vrun(["git", "add", "pyproject.toml", "mkdocs.yml"])
-    vrun(["git", "commit", "--amend", "--no-edit"], check=False)
+    vrun(["git", "commit", "--amend", "--no-edit"])
     vrun(["git", "remote", "add", "origin", repo_origin])
     vrun(["git", "push", "-u", "origin", "master"])
 
@@ -959,7 +959,8 @@ def main():
 PYPROJECT_TEMPLATE = """\
 [tool.poetry]
 name = {name_dump}
-version = "0.0.0" # managed by `poetry-dynamic-versioning`
+# version is managed by `poetry-dynamic-versioning`
+version = "0.0.0"
 description = {description_dump}
 authors = {authors_dump}
 license = "{license}"
