@@ -237,6 +237,7 @@ class TestGetInput(TestCase):
         ):
             self.assertIs(sys.stdin, mock_stdin)
 
+    @skipUnless(os.path.exists("/dev/tty"), "need /dev/tty")
     def test_tty_stdin_redirects_stdin_in_context(self):
         mock_stdin = StringIO()
         mock_tty = StringIO()
