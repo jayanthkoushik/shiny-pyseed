@@ -237,13 +237,17 @@ class TestGetInput(TestCase):
         ):
             self.assertIs(sys.stdin, mock_stdin)
 
-    @skipUnless(os.path.exists("/dev/tty"), "need /dev/tty")
     def test_tty_stdin_redirects_stdin_in_context(self):
         mock_stdin = StringIO()
+        mock_tty = StringIO()
+        mock_open = MagicMock(return_value=mock_tty)
         with patch("sys.stdin", mock_stdin):
-            with patch("pyseed.ensure_tty", True), pyseed.tty_stdin():
-                self.assertIsNot(sys.stdin, mock_stdin)
-                self.assertTrue(sys.stdin.isatty())
+            with (
+                patch("pyseed.ensure_tty", True),
+                patch("builtins.open", mock_open),
+                pyseed.tty_stdin(),
+            ):
+                self.assertIs(sys.stdin, mock_tty)
             self.assertIs(sys.stdin, mock_stdin)
 
     def test_get_input_reads_input_within_tty_stdin_context(self):
