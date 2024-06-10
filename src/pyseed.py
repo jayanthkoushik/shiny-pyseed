@@ -1703,11 +1703,13 @@ build_cmd = [
 print(f"+ {shlex.join(build_cmd)}", file=sys.stderr)
 subprocess.run(build_cmd, check=True, text=True)
 
+# Remove tralining spaces and newlines from the generated files.
 for fname in docs_dir.glob("**/*.md"):
     with open(fname, "r") as f:
         fdata = f.read()
 
-    fdata_fixed = re.sub(r" *(?=\\n|$)", "", fdata)
+    fdata_fixed = re.sub(r" *(?=$)", "", fdata, flags=re.MULTILINE)
+    fdata_fixed = re.sub("\\n+(?=$)", "", fdata_fixed)
     if fdata_fixed != fdata:
         with open(fname, "w") as f:
             print(fdata_fixed, file=f)
