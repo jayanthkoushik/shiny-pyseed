@@ -1633,6 +1633,8 @@ for py_path in sorted(PYSRC_PATH.rglob("*.py")):
 
         with mkdocs_gen_files.open(doc_path, "w") as f:
             print(f"# {mod_name}\\n", file=f)
+            if mod.__doc__:
+                print(mod.__doc__, end="\\n\\n", file=f)
             for obj_name in getattr(mod, "__all__", []):
                 print(f"::: {mod_name}.{obj_name}", file=f)
                 print("    options:", file=f)
