@@ -1,1 +1,4 @@
+commitlintrc
+mkdocs
+mkdocstrings
 pyseed
