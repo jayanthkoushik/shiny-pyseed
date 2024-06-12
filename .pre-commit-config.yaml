@@ -70,3 +70,9 @@ repos:
         types: [python]
         exclude: "scripts/.*\\.py"
         pass_filenames: false
+      - id: test-create
+        name: Test project creation
+        language: system
+        entry: PYSEED_TEST_CREATE_PROJECT=1 python3 -m unittest
+        files: "src/pyseed.py"
+        pass_filenames: false
