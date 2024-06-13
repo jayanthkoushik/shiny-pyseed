@@ -1,0 +1,25 @@
+name: Check pull request
+
+on: pull_request
+
+jobs:
+  run-pre-commit-hooks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: pipx install poetry
+      - uses: actions/setup-python@v5
+        with:
+          python-version-file: pyproject.toml
+          cache: poetry
+      - run: poetry install --all-extras
+      - run: SKIP=test poetry run pre-commit run --all-files
+      - name: Verify commit messages
+        run: ./scripts/verify_pr_commits.py
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  call-run-tests:
+    uses: ./.github/workflows/run-tests.yml
+    with:
+      fail-fast: false

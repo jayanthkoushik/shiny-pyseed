@@ -1,0 +1,73 @@
+site_name: {name_dump}
+site_url: "{site_url}"
+# repo_url: ""
+site_description: {description_dump}
+site_author: {author_dump}
+copyright: {copyright_dump}
+
+docs_dir: www/src
+site_dir: www/_site
+
+nav:
+  - Home:
+      - index.md
+      - License: LICENSE.md
+      - Changelog: CHANGELOG.md
+  - API reference: usage/
+
+plugins:
+  - search
+  - mike:
+      canonical_version: latest
+  - gen-files:
+      scripts:
+        - scripts/gen_site_usage_pages.py
+  - literate-nav
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_root_toc_entry: false
+            members_order: source
+            show_if_no_docstring: true
+            show_signature_annotations: true
+            show_source: false
+            filters:
+              - "!^_"
+
+markdown_extensions:
+  - smarty
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - pymdownx.caret
+  - pymdownx.betterem:
+      smart_enable: all
+  - toc:
+      permalink: true
+
+extra:
+  version:
+    provider: mike
+
+theme:
+  name: material
+  custom_dir: www/theme/overrides
+  features:
+    - content.code.copy
+    - navigation.instant
+    - navigation.instant.progres
+    - navigation.tabs
+    - navigation.indexes
+    - navigation.top
+    - search.suggest
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/weather-night
+        name: Switch to light mode

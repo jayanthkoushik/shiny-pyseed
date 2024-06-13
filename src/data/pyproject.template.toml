@@ -1,0 +1,92 @@
+[tool.poetry]
+name = {name_dump}
+description = {description_dump}
+authors = {authors_dump}
+version = "0.0.0" # version is managed by `poetry-dynamic-versioning`
+packages = [{{ include = "{package}", from = "src" }}]
+include = [
+  {{ path = "tests", format = "sdist" }},
+  {{ path = "docs", format = "sdist" }},
+  {{ path = "CHANGELOG.md", format = "sdist" }},
+]
+# repository = ""
+license = "{license}"
+readme = "README.md"
+# keywords = [
+# ]
+# classifiers = [
+# ]
+
+[tool.poetry.dependencies]
+python = "^{min_python_version}"
+
+[tool.poetry.extras]
+
+[tool.poetry.group.dev.dependencies]
+
+[tool.poetry-dynamic-versioning]
+enable = true
+vcs = "git"
+style = "semver"
+
+[tool.poetry-dynamic-versioning.substitution]
+files = ["*/_version.py"]
+
+[tool.ruff]
+target-version = "{mypy_target_version}"
+
+[tool.ruff.format]
+skip-magic-trailing-comma = true
+
+[tool.ruff.lint]
+select = [
+  "F",
+  "E4",
+  "E7",
+  "E9",
+  "W",
+  #"I",
+  "N",
+  "D2",
+  "D3",
+  "D4",
+  "ANN0",
+  "ANN2",
+  "ANN4",
+  "B",
+  "A",
+  "G",
+  "SIM",
+  #"TCH",
+  "PLC",
+  "PLE",
+  "PLW",
+  "RUF",
+]
+ignore-init-module-imports = true
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401", "F403", "F405"]
+
+[tool.ruff.lint.flake8-annotations]
+allow-star-arg-any = true
+ignore-fully-untyped = true
+suppress-dummy-args = true
+suppress-none-returning = true
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+split-on-trailing-comma = false
+
+[tool.ruff.lint.pycodestyle]
+max-doc-length = 72
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.mypy]
+ignore_missing_imports = true
+
+[build-system]
+requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning"]
+build-backend = "poetry_dynamic_versioning.backend"

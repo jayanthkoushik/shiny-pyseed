@@ -16,11 +16,11 @@ repos:
       - id: detect-private-key
 
   - repo: https://github.com/streetsidesoftware/cspell-cli
-    rev: v8.6.1
+    rev: v8.6.0
     hooks:
       - id: cspell
-        name: Spell check readme
-        files: "README.md"
+        name: Spell check docs
+        files: "docs/.*\\.md|README.md"
 
   - repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook
     rev: v9.13.0
@@ -38,44 +38,46 @@ repos:
         additional_dependencies:
           - "@commitlint/config-conventional"
 
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v4.0.0-alpha.8
+    hooks:
+      - id: prettier
+        name: "Prettify non-code files"
+        entry: prettier --write --ignore-unknown --cache-location .prettier_cache/cache.json
+        additional_dependencies:
+          - prettier
+          - prettier-plugin-sh
+          - prettier-plugin-toml
+
   - repo: local
     hooks:
-      - id: build
-        name: Build dist
-        language: system
-        entry: poetry run scripts/build_dist.py
-        files: "src/.*"
-        pass_filenames: false
       - id: format
         name: Format Python files
         language: system
         entry: poetry run ruff format
         types: [python]
-        exclude: "dist/pyseed.py"
       - id: lint
         name: Lint Python files
         language: system
         entry: poetry run ruff check
         types: [python]
         pass_filenames: false
-        exclude: "dist/pyseed.py"
       - id: mypy
         name: Type check Python files
-        entry: poetry run mypy src tests
+        entry: poetry run mypy .
         language: system
         types: [python]
         pass_filenames: false
-        exclude: "dist/pyseed.py"
       - id: test
         name: Run unit tests
         language: system
-        entry: python3 -m unittest
+        entry: poetry run python -m unittest
         types: [python]
-        exclude: "scripts/.*\\.py"
+        exclude: "scripts/.*\\.py|www/.*\\.py"
         pass_filenames: false
-      - id: test-create
-        name: Test project creation
+      - id: docs
+        name: Build docs
+        entry: poetry run python scripts/make_docs.py
         language: system
-        entry: sh -c "PYSEED_TEST_CREATE_PROJECT=1 python3 -m unittest"
-        files: "src/.*"
+        files: "src/.*\\.py|docs/make\\.sh"
         pass_filenames: false

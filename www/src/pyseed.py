@@ -1,1 +1,1 @@
-../../src/pyseed.py
+../../dist/pyseed.py

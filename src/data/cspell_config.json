@@ -1,0 +1,15 @@
+{
+  "$schema": "https://raw.githubusercontent.com/streetsidesoftware/cspell/main/cspell.schema.json",
+  "version": "0.2",
+  "language": "en-US",
+  "dictionaries": ["softwareTerms", "python", "filetypes", "project-words"],
+  "allowCompoundWords": true,
+  "maxDuplicateProblems": 1,
+  "dictionaryDefinitions": [
+    {
+      "name": "project-words",
+      "path": "project-words.txt",
+      "addWords": true
+    }
+  ]
+}

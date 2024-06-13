@@ -1,0 +1,27 @@
+name: Run unit tests
+
+on:
+  workflow_call:
+    inputs:
+      fail-fast:
+        type: boolean
+        required: false
+        default: true
+
+jobs:
+  main:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: [{python_versions}]
+      fail-fast: ${{{{ inputs.fail-fast }}}}
+    runs-on: ${{{{ matrix.os }}}}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{{{ matrix.python-version }}}}
+      - run: pip install poetry
+      - run: poetry lock
+      - run: poetry install --only main --all-extras
+      - run: poetry run python -m unittest -v

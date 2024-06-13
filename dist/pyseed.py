@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from __future__ import annotations
 
 import shlex
@@ -978,34 +980,362 @@ def main():
 # of the form '!!!<DATA FILE>!!!'.
 
 
-PYPROJECT_TEMPLATE = r"""!!!pyproject.template.toml!!!
+PYPROJECT_TEMPLATE = r"""[tool.poetry]
+name = {name_dump}
+description = {description_dump}
+authors = {authors_dump}
+version = "0.0.0" # version is managed by `poetry-dynamic-versioning`
+packages = [{{ include = "{package}", from = "src" }}]
+include = [
+  {{ path = "tests", format = "sdist" }},
+  {{ path = "docs", format = "sdist" }},
+  {{ path = "CHANGELOG.md", format = "sdist" }},
+]
+# repository = ""
+license = "{license}"
+readme = "README.md"
+# keywords = [
+# ]
+# classifiers = [
+# ]
+
+[tool.poetry.dependencies]
+python = "^{min_python_version}"
+
+[tool.poetry.extras]
+
+[tool.poetry.group.dev.dependencies]
+
+[tool.poetry-dynamic-versioning]
+enable = true
+vcs = "git"
+style = "semver"
+
+[tool.poetry-dynamic-versioning.substitution]
+files = ["*/_version.py"]
+
+[tool.ruff]
+target-version = "{mypy_target_version}"
+
+[tool.ruff.format]
+skip-magic-trailing-comma = true
+
+[tool.ruff.lint]
+select = [
+  "F",
+  "E4",
+  "E7",
+  "E9",
+  "W",
+  #"I",
+  "N",
+  "D2",
+  "D3",
+  "D4",
+  "ANN0",
+  "ANN2",
+  "ANN4",
+  "B",
+  "A",
+  "G",
+  "SIM",
+  #"TCH",
+  "PLC",
+  "PLE",
+  "PLW",
+  "RUF",
+]
+ignore-init-module-imports = true
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401", "F403", "F405"]
+
+[tool.ruff.lint.flake8-annotations]
+allow-star-arg-any = true
+ignore-fully-untyped = true
+suppress-dummy-args = true
+suppress-none-returning = true
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+split-on-trailing-comma = false
+
+[tool.ruff.lint.pycodestyle]
+max-doc-length = 72
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.mypy]
+ignore_missing_imports = true
+
+[build-system]
+requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning"]
+build-backend = "poetry_dynamic_versioning.backend"
+
 """
 
-MKDOCS_CONFIG_TEMPLATE = r"""!!!mkdocs_config.template.yml!!!
+MKDOCS_CONFIG_TEMPLATE = r"""site_name: {name_dump}
+site_url: "{site_url}"
+# repo_url: ""
+site_description: {description_dump}
+site_author: {author_dump}
+copyright: {copyright_dump}
+
+docs_dir: www/src
+site_dir: www/_site
+
+nav:
+  - Home:
+      - index.md
+      - License: LICENSE.md
+      - Changelog: CHANGELOG.md
+  - API reference: usage/
+
+plugins:
+  - search
+  - mike:
+      canonical_version: latest
+  - gen-files:
+      scripts:
+        - scripts/gen_site_usage_pages.py
+  - literate-nav
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_root_toc_entry: false
+            members_order: source
+            show_if_no_docstring: true
+            show_signature_annotations: true
+            show_source: false
+            filters:
+              - "!^_"
+
+markdown_extensions:
+  - smarty
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - pymdownx.caret
+  - pymdownx.betterem:
+      smart_enable: all
+  - toc:
+      permalink: true
+
+extra:
+  version:
+    provider: mike
+
+theme:
+  name: material
+  custom_dir: www/theme/overrides
+  features:
+    - content.code.copy
+    - navigation.instant
+    - navigation.instant.progres
+    - navigation.tabs
+    - navigation.indexes
+    - navigation.top
+    - search.suggest
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/weather-night
+        name: Switch to light mode
+
 """
 
-MIT_LICENSE_TEMPLATE = r"""!!!mit_license.template.md!!!
+MIT_LICENSE_TEMPLATE = r"""# MIT License
+
+Copyright (c) {author}
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
 """
 
-README_TEMPLATE = r"""!!!readme.template.md!!!
+README_TEMPLATE = r"""# {title}
+
+{description}
+
 """
 
-COMMITLINT_RC = r"""!!!commitlint_rc.yaml!!!
+COMMITLINT_RC = r"""extends: ["@commitlint/config-conventional"]
+
+rules:
+  # Rule values are of the form [<level>, <always/never>, [<value>]].
+  # Levels: 0 (disable), 1 (warning), 2 (error).
+  header-max-length: [2, always, 72]
+  body-max-line-length: [2, always, 72]
+  footer-max-line-length: [2, always, 72]
+
+  body-leading-blank: [2, always]
+  footer-leading-blank: [2, always]
+
 """
 
-CSPELL_CONFIG = r"""!!!cspell_config.json!!!
+CSPELL_CONFIG = r"""{
+  "$schema": "https://raw.githubusercontent.com/streetsidesoftware/cspell/main/cspell.schema.json",
+  "version": "0.2",
+  "language": "en-US",
+  "dictionaries": ["softwareTerms", "python", "filetypes", "project-words"],
+  "allowCompoundWords": true,
+  "maxDuplicateProblems": 1,
+  "dictionaryDefinitions": [
+    {
+      "name": "project-words",
+      "path": "project-words.txt",
+      "addWords": true
+    }
+  ]
+}
+
 """
 
-EDITORCONFIG = r"""!!!editorconfig.ini!!!
+EDITORCONFIG = r"""root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+trim_trailing_whitespace = true
+insert_final_newline = true
+indent_style = space
+
+[*.{py,sh}]
+indent_size = 4
+
+[*.{yml,yaml,toml,md,json,html}]
+indent_size = 2
+
 """
 
-GITATTRIBUTES = r"""!!!gitattributes!!!
+GITATTRIBUTES = r""".git*                       export-ignore
+.commitlintrc.yaml          export-ignore
+.editorconfig               export-ignore
+.pre-commit-config.yaml     export-ignore
+.prettierignore             export-ignore
+.prettierrc.js              export-ignore
+.cspell.json                export-ignore
+project-words.txt           export-ignore
+
 """
 
-GITIGNORE = r"""!!!gitignore!!!
+GITIGNORE = r"""dist/
+docs/_build/
+www/_site/
+.mypy_cache/
+.ruff_cache/
+.prettier_cache/
+__pycache__/
+.ipynb_checkpoints/
+
 """
 
-PRE_COMMIT_CONFIG = r"""!!!pre_commit_config.yaml!!!
+PRE_COMMIT_CONFIG = r"""default_install_hook_types: [pre-commit, commit-msg]
+default_stages: [pre-commit]
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: check-case-conflict
+      - id: check-symlinks
+      - id: destroyed-symlinks
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+      - id: trailing-whitespace
+      - id: check-merge-conflict
+      - id: check-vcs-permalinks
+      - id: detect-private-key
+
+  - repo: https://github.com/streetsidesoftware/cspell-cli
+    rev: v8.6.0
+    hooks:
+      - id: cspell
+        name: Spell check docs
+        files: "docs/.*\\.md|README.md"
+
+  - repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook
+    rev: v9.13.0
+    hooks:
+      - id: commitlint
+        name: Lint commit message
+        entry: commitlint -e -s
+        stages: [commit-msg]
+        additional_dependencies:
+          - "@commitlint/config-conventional"
+      - id: commitlint
+        name: Lint commit message from file in $COMMIT_MSG_FILE
+        entry: commitlint -E COMMIT_MSG_FILE -s
+        stages: [manual]
+        additional_dependencies:
+          - "@commitlint/config-conventional"
+
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v4.0.0-alpha.8
+    hooks:
+      - id: prettier
+        name: "Prettify non-code files"
+        entry: prettier --write --ignore-unknown --cache-location .prettier_cache/cache.json
+        additional_dependencies:
+          - prettier
+          - prettier-plugin-sh
+          - prettier-plugin-toml
+
+  - repo: local
+    hooks:
+      - id: format
+        name: Format Python files
+        language: system
+        entry: poetry run ruff format
+        types: [python]
+      - id: lint
+        name: Lint Python files
+        language: system
+        entry: poetry run ruff check
+        types: [python]
+        pass_filenames: false
+      - id: mypy
+        name: Type check Python files
+        entry: poetry run mypy .
+        language: system
+        types: [python]
+        pass_filenames: false
+      - id: test
+        name: Run unit tests
+        language: system
+        entry: poetry run python -m unittest
+        types: [python]
+        exclude: "scripts/.*\\.py|www/.*\\.py"
+        pass_filenames: false
+      - id: docs
+        name: Build docs
+        entry: poetry run python scripts/make_docs.py
+        language: system
+        files: "src/.*\\.py|docs/make\\.sh"
+        pass_filenames: false
+
 """
 
 PRE_COMMIT_JUPYTER_CONFIG = """\
@@ -1016,19 +1346,192 @@ PRE_COMMIT_JUPYTER_CONFIG = """\
         types: [jupyter]
 """
 
-PRETTIER_IGNORE = r"""!!!prettier_ignore!!!
+PRETTIER_IGNORE = r""".gitattributes
+docs/*.md
+CHANGELOG.md
+poetry.lock
+
 """
 
-PRETTIER_RC = r"""!!!prettier_rc.js!!!
+PRETTIER_RC = r"""// https://github.com/prettier/prettier/issues/15388#issuecomment-1717746872
+const config = {
+  plugins: [
+    require.resolve("prettier-plugin-sh"),
+    require.resolve("prettier-plugin-toml"),
+  ],
+};
+
+module.exports = config;
+
 """
 
-CHECK_PR_WORKFLOW = r"""!!!check_pr_workflow.yml!!!
+CHECK_PR_WORKFLOW = r"""name: Check pull request
+
+on: pull_request
+
+jobs:
+  run-pre-commit-hooks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: pipx install poetry
+      - uses: actions/setup-python@v5
+        with:
+          python-version-file: pyproject.toml
+          cache: poetry
+      - run: poetry install --all-extras
+      - run: SKIP=test poetry run pre-commit run --all-files
+      - name: Verify commit messages
+        run: ./scripts/verify_pr_commits.py
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  call-run-tests:
+    uses: ./.github/workflows/run-tests.yml
+    with:
+      fail-fast: false
+
 """
 
-RELEASE_NEW_VERSION_WORKFLOW = r"""!!!release_new_version_workflow.yml!!!
+RELEASE_NEW_VERSION_WORKFLOW = r"""name: Create and publish a new release
+
+on:
+  workflow_dispatch:
+    inputs:
+      first-release:
+        description: >
+          Create the first release. If version is not specified,
+          it will be set to '1.0.0'. No changelog will be generated.
+        type: boolean
+        required: false
+        default: false
+      version:
+        description: >
+          Release as the provided version. Should be a valid semvar
+          version, or one of 'major', 'minor', or 'patch'. If not
+          provided, version is determined automatically from commits
+          since the previous release.
+        type: string
+        required: false
+        default: ""
+      pre-release:
+        description: >
+          Make a pre-release. If a custom version is specified, or a first
+          release is being made, a pre-release tag must also be provided,
+          or the custom version should be of the form
+          '<major>.<minor>.<patch>-<pre-release-tag>'.
+        type: boolean
+        required: false
+        default: false
+      pre-release-tag:
+        description: >
+          Use provided tag for pre-release. This only has effect
+          if making a pre-release, and will create release with version
+          '<major>.<minor>.<patch>-<pre-release-tag>-<pre-release-version>'.
+        type: string
+        required: false
+        default: ""
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+jobs:
+  call-run-tests:
+    uses: ./.github/workflows/run-tests.yml
+    with:
+      fail-fast: true
+
+  create-release:
+    runs-on: ubuntu-latest
+    needs: call-run-tests
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.REPO_PAT }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+
+      - run: pipx install poetry
+      - uses: actions/setup-python@v5
+        with:
+          python-version-file: pyproject.toml
+          cache: poetry
+      - run: poetry self add "poetry-dynamic-versioning[plugin]"
+      - run: poetry install --all-extras
+
+      - run: SKIP=test poetry run pre-commit run --all-files
+
+      - name: Configure git
+        run: |
+          git config --global user.name "${{ github.actor }}"
+          git config --global user.email \
+            "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
+
+      - name: Bump version and create changelog
+        run: >
+          ./scripts/commit_and_tag_version.py
+          -f ${{ inputs.first-release }}
+          -r ${{ inputs.version }}
+          -p ${{ inputs.pre-release }}
+          -t ${{ inputs.pre-release-tag }}
+
+      - run: git push --follow-tags origin master
+
+      - run: npx conventional-github-releaser -p angular
+        env:
+          CONVENTIONAL_GITHUB_RELEASER_TOKEN: ${{ secrets.REPO_PAT }}
+
+      - run: poetry build
+      - run: poetry publish -u __token__ -p $PYPI_TOKEN
+        env:
+          PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
+
+      - name: Get latest git tag
+        id: tag
+        run: echo "tag=$( git describe --tags --abbrev=0 )" >> $GITHUB_OUTPUT
+      - name: Extract major and minor versions of latest release
+        id: version
+        run: |
+          echo "version=$( echo ${{ steps.tag.outputs.tag }} \
+            | sed -E 's/^v([0-9]+)\.([0-9]+)\..*$/\1.\2/' )" >> $GITHUB_OUTPUT
+      - name: Publish site for new release
+        if: ${{ ! inputs.pre-release }}
+        run: |
+          poetry run mike set-default --allow-undefined latest
+          poetry run mike deploy --update-aliases --push --allow-empty \
+            ${{ steps.version.outputs.version }} latest
+
 """
 
-RUN_TESTS_WORKFLOW_TEMPLATE = r"""!!!run_tests_workflow.template.yml!!!
+RUN_TESTS_WORKFLOW_TEMPLATE = r"""name: Run unit tests
+
+on:
+  workflow_call:
+    inputs:
+      fail-fast:
+        type: boolean
+        required: false
+        default: true
+
+jobs:
+  main:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: [{python_versions}]
+      fail-fast: ${{{{ inputs.fail-fast }}}}
+    runs-on: ${{{{ matrix.os }}}}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{{{ matrix.python-version }}}}
+      - run: pip install poetry
+      - run: poetry lock
+      - run: poetry install --only main --all-extras
+      - run: poetry run python -m unittest -v
+
 """
 
 UPDATE_PRE_COMMIT_HOOKS_WORKFLOW_TEMPLATE = r"""name: Update pre-commit hooks
@@ -1056,16 +1559,209 @@ jobs:
           labels: automated,chore
 """
 
-COMMIT_AND_TAG_VERSION_SCRIPT = r"""!!!commit_and_tag_version_script.py!!!
+COMMIT_AND_TAG_VERSION_SCRIPT = r"""#!/usr/bin/env python3
+
+import subprocess
+import sys
+from argparse import ArgumentParser
+
+parser = ArgumentParser()
+parser.add_argument("-f", "--first-release", type=str, choices=["true", "false"])
+parser.add_argument("-r", "--release-version", nargs="?", type=str)
+parser.add_argument("-p", "--pre-release", type=str, choices=["true", "false"])
+parser.add_argument("-t", "--pre-release-tag", nargs="?", type=str)
+parser.add_argument("--dry-run", action="store_true")
+args = parser.parse_args()
+
+cmd_args = []
+
+if args.first_release == "true":
+    cmd_args.append("--skip.changelog")
+    cmd_args.append("--skip.commit")
+
+if args.release_version:
+    cmd_args.extend(["-r", args.release_version])
+elif args.first_release == "true":
+    cmd_args.extend(["-r", "1.0.0"])
+
+if args.pre_release == "true":
+    cmd_args.append("-p")
+    if args.pre_release_tag:
+        cmd_args.append(args.pre_release_tag)
+
+if args.dry_run:
+    cmd_args.append("--dry-run")
+
+cmd = ["npx", "commit-and-tag-version", *cmd_args]
+print(f"+ {' '.join(cmd)}", file=sys.stderr)
+subprocess.run(cmd, check=True)
+
 """
 
-GEN_SITE_USAGE_PAGES_SCRIPT = r"""!!!gen_site_usage_pages_script.py!!!
+GEN_SITE_USAGE_PAGES_SCRIPT = r"""#!/usr/bin/env python3
+
+from importlib import import_module
+from pathlib import Path
+
+import mkdocs_gen_files
+
+PYSRC_PATH = Path(__file__).parent.parent / "src"
+USAGE_REL_DIR = "usage"  # relative to the docs
+
+nav = mkdocs_gen_files.Nav()
+
+for py_path in sorted(PYSRC_PATH.rglob("*.py")):
+    py_rel_path = py_path.relative_to(PYSRC_PATH)
+    mod_rel_path = py_rel_path.with_suffix("")
+    doc_rel_path = py_rel_path.with_suffix(".md")
+    doc_path = Path(USAGE_REL_DIR, doc_rel_path)
+    mod_path_parts = tuple(mod_rel_path.parts)
+
+    if mod_path_parts[-1] == "__init__":
+        # Create an index file with all the exported objects in the
+        # init file (`__all__`).
+        mod_path_parts = mod_path_parts[:-1]
+        doc_rel_path = doc_rel_path.with_name("index.md")
+        doc_path = doc_path.with_name("index.md")
+
+        mod_name = ".".join(mod_path_parts)
+        mod = import_module(mod_name)
+
+        with mkdocs_gen_files.open(doc_path, "w") as f:
+            print(f"# {mod_name}\n", file=f)
+            if mod.__doc__:
+                print(mod.__doc__, end="\n\n", file=f)
+            for obj_name in getattr(mod, "__all__", []):
+                print(f"::: {mod_name}.{obj_name}", file=f)
+                print("    options:", file=f)
+                print("      show_root_heading: true", file=f)
+                print("      show_root_full_path: false", file=f)
+    elif mod_path_parts[-1].startswith("_"):
+        continue
+    else:
+        with mkdocs_gen_files.open(doc_path, "w") as f:
+            mod_name = ".".join(mod_path_parts)
+            print(f"# {mod_name}", file=f)
+            print(f"::: {mod_name}", file=f)
+
+    nav[mod_path_parts] = doc_rel_path.as_posix()
+    mkdocs_gen_files.set_edit_path(doc_path, py_rel_path)
+
+with mkdocs_gen_files.open(f"{USAGE_REL_DIR}/SUMMARY.md", "w") as nav_file:
+    nav_file.writelines(nav.build_literate_nav())
+
 """
 
-MAKE_DOCS_SCRIPT = r"""!!!make_docs_script.py!!!
+MAKE_DOCS_SCRIPT = r"""#!/usr/bin/env python3
+
+import re
+import shlex
+import subprocess
+import sys
+from pathlib import Path
+
+docs_dir = Path("docs")
+build_dir = docs_dir / "_build"
+src_dir = Path("src")
+pkg_dirs = list(src_dir.glob("*"))
+
+# fmt: off
+apidoc_cmd = [
+    "sphinx-apidoc",
+    "-o", str(build_dir),
+    "-d", "1",
+    "--module-first",
+    "--tocfile=index",
+    "--separate",
+    *list(map(str, pkg_dirs)),
+]
+# fmt: on
+print(f"+ {shlex.join(apidoc_cmd)}", file=sys.stderr)
+subprocess.run(apidoc_cmd, check=True, text=True)
+
+doctrees_dir = build_dir / ".doctrees"
+rsts = list(build_dir.glob("*.rst"))
+
+# fmt: off
+build_cmd = [
+    "sphinx-build",
+    "-C",
+    "-D", "extensions=sphinx.ext.autodoc,sphinx.ext.napoleon",
+    "-D", "default_role=samp",
+    "-D", "autodoc_member_order=bysource",
+    "-D", "autodoc_typehints=description",
+    "-D", "highlight_language=python",
+    "-b", "markdown",
+    "-c", str(docs_dir),
+    "-d", str(doctrees_dir),
+    str(build_dir), str(docs_dir),
+    # *list(map(str, rsts)),
+]
+# fmt: on
+print(f"+ {shlex.join(build_cmd)}", file=sys.stderr)
+subprocess.run(build_cmd, check=True, text=True)
+
+# Remove tralining spaces and newlines from the generated files.
+for fname in docs_dir.glob("**/*.md"):
+    with open(fname, "r") as f:
+        fdata = f.read()
+
+    fdata_fixed = re.sub(r" *(?=$)", "", fdata, flags=re.MULTILINE)
+    fdata_fixed = re.sub("\n+(?=$)", "", fdata_fixed)
+    if fdata_fixed != fdata:
+        with open(fname, "w") as f:
+            print(fdata_fixed, file=f)
+
 """
 
-VERIFY_PR_COMMITS_SCRIPT = r"""!!!verify_pr_commits_script.py!!!
+VERIFY_PR_COMMITS_SCRIPT = r"""#!/usr/bin/env python3
+
+import json
+import os
+import subprocess
+import sys
+from tempfile import NamedTemporaryFile
+
+github_ref_name = os.environ["GITHUB_REF_NAME"]
+# GITHUB_REF_NAME is of the form "<pr_number>/merge" for pull requests.
+pr_num = github_ref_name.split("/")[0]
+
+gh_cmd = ["gh", "pr", "view", pr_num, "--json", "commits"]
+try:
+    gh_proc = subprocess.run(gh_cmd, check=True, capture_output=True, text=True)
+except subprocess.CalledProcessError as e:
+    print(e.stderr, file=sys.stderr)
+    sys.exit(e.returncode)
+
+gh_output_json = json.loads(gh_proc.stdout)
+commits = gh_output_json["commits"]
+commit_msgs = [
+    f"{commit['messageHeadline']}\n\n{commit['messageBody']}".strip()
+    for commit in commits
+]
+
+pre_commit_cmd = [
+    "poetry",
+    "run",
+    "pre-commit",
+    "run",
+    "--hook-stage",
+    "manual",
+    "commitlint",
+]
+ret_code = 0
+for commit_msg in commit_msgs:
+    with NamedTemporaryFile(mode="w") as f:
+        os.environ["COMMIT_MSG_FILE"] = f.name
+        print(f"{commit_msg}\n", file=sys.stderr)
+        print(commit_msg, file=f)
+        pre_commit_proc = subprocess.run(pre_commit_cmd, check=False, text=True)
+        if pre_commit_proc.returncode != 0:
+            ret_code = 1
+        print("-" * 80, file=sys.stderr)
+
+sys.exit(ret_code)
+
 """
 
 INIT_PY = r"""from ._version import __version__
@@ -1074,7 +1770,13 @@ INIT_PY = r"""from ._version import __version__
 VERSION_PY = r"""__version__ = "0.0.0"  # managed by `poetry-dynamic-versioning`
 """
 
-THEME_OVERRIDE_MAIN = r"""!!!theme_override_main.html!!!
+THEME_OVERRIDE_MAIN = r"""{% extends "base.html" %} {% block outdated %} You are viewing an old version of
+this page.
+<a href="{{ '../' ~ base_url }}">
+  <strong>Click here to go to latest version.</strong>
+</a>
+{% endblock %}
+
 """
 
 

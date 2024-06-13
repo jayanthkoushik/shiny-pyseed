@@ -4,7 +4,9 @@ shiny-pyseed is an opinionated bootstrapper for Python projects, geared
 towards fast single person development.
 
 <!--------------------------------------------------------------------->
+
 ## Features
+
 <!--------------------------------------------------------------------->
 
 - [Poetry](https://python-poetry.org) is used to manage dependencies and
@@ -26,7 +28,9 @@ towards fast single person development.
   - Pre-commit hooks are periodically auto-updated.
 
 <!--------------------------------------------------------------------->
+
 ## Usage
+
 <!--------------------------------------------------------------------->
 
 ### Requirements
@@ -48,7 +52,7 @@ curl -sSL https://jkoushik.me/shiny-pyseed/latest/pyseed.py | python3 -
 ```
 
 Alternatively, you can download or clone the project repository and run
-`src/pyseed.py`.
+`dist/pyseed.py`.
 
 **NOTE: `pyseed.py` cannot be run from inside a virtual environment, and
 will exit with an error if it is.**
@@ -85,7 +89,9 @@ creation) is skipped in non-interactive mode.**
    the `release-new-version` workflow to create a new release.
 
 <!--------------------------------------------------------------------->
+
 ## Bootstrapping details
+
 <!--------------------------------------------------------------------->
 
 ### Project data collection
@@ -123,7 +129,7 @@ specifying them are:
 6. `--authors <AUTHORS>`: Project authors. The project authors must be
    specified as a comma separated list of names and emails in the form
    `name <email>`. For example `Author One <aone@example.org>, Author
-   Two <atwo@example.org>`. If not provided, the script will try to read
+Two <atwo@example.org>`. If not provided, the script will try to read
    the global Git config to get the user name and email, and use it as
    the sole author.
 7. `--pym <3.MINOR.PATCH>`: Minimum supported Python version. Note that
@@ -207,7 +213,9 @@ The following operations are involved:
    created for the release action to work.**
 
 <!--------------------------------------------------------------------->
+
 ## Feature details
+
 <!--------------------------------------------------------------------->
 
 This section describes the full set of features in a shiny-pyseed
@@ -216,6 +224,7 @@ default options, to a folder named `testproject`, which will look like
 this:
 
 <!-- cSpell: disable -->
+
 ```
 ./
 ├── docs/
@@ -263,6 +272,7 @@ this:
 ├── pyproject.toml
 └── README.md
 ```
+
 <!-- cSpell: enable -->
 
 We will now look into the various components.
@@ -349,12 +359,14 @@ generation. Docstrings should follow [Google's style guide](https://google.githu
 Here is a detailed example:
 
 **`src/testproject/__init__.py`**
+
 ```python
 """This is a test project."""
 from ._version import __version__
 ```
 
 **`src/testproject/spam.py`**
+
 ```python
 """This is the spam module."""
 
@@ -382,6 +394,7 @@ class Ham:
 ```
 
 **`src/testproject/foo/__init__.py`**
+
 ```python
 """This is the foo subpackage."""
 
@@ -393,6 +406,7 @@ __all__ = _bar.__all__  # type: ignore
 ```
 
 **`src/testproject/foo/_bar.py`**
+
 ```python
 # No docstring here since this is a private module. Its members are
 # exposed directly through the foo package.
@@ -443,14 +457,15 @@ file is created for each package and module.
 This is what the docs will look like for the sample code above:
 
 **`docs/index.md`**
+
 ```markdown
 # testproject
 
-
-* [testproject package](testproject.md)
+- [testproject package](testproject.md)
 ```
 
 **`docs/testproject.md`**
+
 ```markdown
 # testproject package
 
@@ -458,33 +473,29 @@ This is a test project.
 
 ## Subpackages
 
-
-* [testproject.foo package](testproject.foo.md)
-
+- [testproject.foo package](testproject.foo.md)
 
 ## Submodules
 
-
-* [testproject.spam module](testproject.spam.md)
+- [testproject.spam module](testproject.spam.md)
 ```
 
 **`docs/testproject.spam.md`**
-~~~~markdown
+
+````markdown
 # testproject.spam module
 
 This is the spam module.
 
-
 ### _class_ testproject.spam.Ham(n)
+
 Bases: `object`
 
 This is the Ham class.
 
+- **Parameters**
 
-* **Parameters**
-
-    **n** (*int*) – Number of eggs.
-
+  **n** (_int_) – Number of eggs.
 
 ### Examples
 
@@ -495,40 +506,35 @@ This is the Ham class.
 10 eggs
 ```
 
-
 #### eggs()
+
 Display the number of eggs.
-~~~~
+````
 
 **`docs/testproject.foo.md`**
-~~~~markdown
+
+```markdown
 # testproject.foo package
 
 This is the foo subpackage.
 
-
 ### testproject.foo.baz(x, y)
+
 This is the baz function.
 
+- **Parameters**
 
-* **Parameters**
+  - **x** (_int_) – A number.
+  - **y** (_str_) – A string.
 
+- **Returns**
 
-    * **x** (*int*) – A number.
-    * **y** (*str*) – A string.
+  A string combining the inputs.
 
+- **Return type**
 
-
-* **Returns**
-
-    A string combining the inputs.
-
-
-
-* **Return type**
-
-    str
-~~~~
+  str
+```
 
 #### Web docs
 
@@ -611,6 +617,7 @@ for example using the Actions tab on GitHub. It requires the `REPO_PAT`
 and `PYPI_TOKEN` secrets.
 
 This workflow will:
+
 - run the test workflow (`run-tests.yml`), and check if it passes
 - run pre-commit hooks on all files in the repository, and check if
   there is no error

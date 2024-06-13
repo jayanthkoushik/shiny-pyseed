@@ -23,7 +23,7 @@ try:
 except ImportError:
     HAVE_NACL = False
 
-sys.path.insert(0, "src")
+sys.path.insert(0, "dist")
 
 import pyseed
 
