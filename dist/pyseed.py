@@ -1550,6 +1550,7 @@ jobs:
           branch: update-pre-commit-hooks
           title: Update pre-commit hooks
           labels: automated,chore
+
 """
 
 COMMIT_AND_TAG_VERSION_SCRIPT = r"""#!/usr/bin/env python3

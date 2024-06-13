@@ -1016,29 +1016,7 @@ RELEASE_NEW_VERSION_WORKFLOW = r"""!!!release_new_version_workflow.yml!!!
 RUN_TESTS_WORKFLOW_TEMPLATE = r"""!!!run_tests_workflow.template.yml!!!
 """
 
-UPDATE_PRE_COMMIT_HOOKS_WORKFLOW_TEMPLATE = r"""name: Update pre-commit hooks
-
-on:
-  workflow_dispatch:
-{schedule}
-permissions:
-  contents: write
-  pull-requests: write
-
-jobs:
-  pre-commit-autoupdate:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - run: pipx install pre-commit
-      - run: pre-commit autoupdate
-      - uses: peter-evans/create-pull-request@v6
-        with:
-          token: ${{ secrets.REPO_PAT }}
-          commit-message: "chore: update pre-commit hooks"
-          branch: update-pre-commit-hooks
-          title: Update pre-commit hooks
-          labels: automated,chore
+UPDATE_PRE_COMMIT_HOOKS_WORKFLOW_TEMPLATE = r"""!!!update_pre_commit_hooks_workflow.template.yml!!!
 """
 
 COMMIT_AND_TAG_VERSION_SCRIPT = r"""!!!commit_and_tag_version_script.py!!!
