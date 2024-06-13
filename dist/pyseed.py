@@ -505,9 +505,6 @@ class ConfigKey(Enum):
     add_typing_extensions = BoolConfigKeySpec(
         "typing_extensions", "add 'typing_extensions' as a dependency", False
     )
-    add_jupyter_support = BoolConfigKeySpec(
-        "jupyter", "add support for jupyter notebooks", False
-    )
     add_py_typed = BoolConfigKeySpec(
         "py_typed", "add 'py.typed' file indicating typing support", True
     )
@@ -676,8 +673,6 @@ def create_project(config: dict[ConfigKey, Any]):
     ).strip()
 
     pre_commit_config = PRE_COMMIT_CONFIG
-    if config[ConfigKey.add_jupyter_support]:
-        pre_commit_config += f"\n{PRE_COMMIT_JUPYTER_CONFIG}"
 
     min_py_minor_version = int(config[ConfigKey.min_py_version].split(".")[1])
     max_py_minor_version = int(config[ConfigKey.max_py_version].split(".")[1])
@@ -767,8 +762,6 @@ def create_project(config: dict[ConfigKey, Any]):
     vrun(["poetry", "install", "--all-extras"])
     if config[ConfigKey.add_typing_extensions]:
         vrun(["poetry", "add", "typing_extensions"])
-    if config[ConfigKey.add_jupyter_support]:
-        vrun(["poetry", "add", "notebook"])
     dev_dependencies = [
         "pre-commit",
         "ruff",
@@ -1333,15 +1326,12 @@ repos:
         language: system
         files: "src/.*\\.py|docs/make\\.sh"
         pass_filenames: false
-
-"""
-
-PRE_COMMIT_JUPYTER_CONFIG = """\
       - id: nbstrip
         name: Remove metadata from notebooks
         entry: poetry run jupyter nbconvert --inplace --ClearMetadataPreprocessor.enabled=True
         language: system
         types: [jupyter]
+
 """
 
 PRETTIER_IGNORE = r""".gitattributes

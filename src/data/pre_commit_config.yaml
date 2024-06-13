@@ -80,3 +80,8 @@ repos:
         language: system
         files: "src/.*\\.py|docs/make\\.sh"
         pass_filenames: false
+      - id: nbstrip
+        name: Remove metadata from notebooks
+        entry: poetry run jupyter nbconvert --inplace --ClearMetadataPreprocessor.enabled=True
+        language: system
+        types: [jupyter]

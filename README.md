@@ -129,7 +129,7 @@ specifying them are:
 6. `--authors <AUTHORS>`: Project authors. The project authors must be
    specified as a comma separated list of names and emails in the form
    `name <email>`. For example `Author One <aone@example.org>, Author
-Two <atwo@example.org>`. If not provided, the script will try to read
+   Two <atwo@example.org>`. If not provided, the script will try to read
    the global Git config to get the user name and email, and use it as
    the sole author.
 7. `--pym <3.MINOR.PATCH>`: Minimum supported Python version. Note that
@@ -138,10 +138,6 @@ Two <atwo@example.org>`. If not provided, the script will try to read
    the versions used for running tests with GitHub actions.
 9. `--typing-extensions`/`--no-typing-extensions`: Whether to add the
    `typing_extensions` package as a dependency. False by default.
-10. `--jupyter`/`--no-jupyter`: Whether to add support for jupyter
-    notebooks. This will add `jupyter` as dependency, and will also
-    modify the pre-commit configuration to format notebooks. False by
-    default.
 11. `--py-typed`/`--no-py-typed`: Whether to add a `py.typed` file to
     the Python package, indicating that the package provides type hints.
     True by default.
@@ -162,7 +158,7 @@ bootstrapped with the following operations:
 3. A Git repository is initialized.
 4. `poetry install` is called to create the project virtual environment,
    and install the project itself.
-5. `typing_extensions` and `notebook` are added as dependencies if configured.
+5. `typing_extensions` is added as a dependency if configured.
 6. Dev dependencies are added: `pre-commit`, `ruff`, `mypy`, `sphinx`,
    `sphinx-markdown-builder`, `mkdocstrings`, `mkdocs-material`,
    `mkdocs-gen-files`, `mkdocs-literate-nav`, `mike`.
