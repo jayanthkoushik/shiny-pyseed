@@ -500,9 +500,6 @@ class ConfigKey(Enum):
         "3.12",
         validate_string_python_version,
     )
-    add_typing_extensions = BoolConfigKeySpec(
-        "typing_extensions", "add 'typing_extensions' as a dependency", False
-    )
     add_py_typed = BoolConfigKeySpec(
         "py_typed", "add 'py.typed' file indicating typing support", True
     )
@@ -758,8 +755,6 @@ def create_project(config: dict[ConfigKey, Any]):
     vrun(["git", "init", "-b", "master"])
 
     vrun(["poetry", "install", "--all-extras"])
-    if config[ConfigKey.add_typing_extensions]:
-        vrun(["poetry", "add", "typing_extensions"])
     dev_dependencies = [
         "pre-commit",
         "ruff",

@@ -680,7 +680,6 @@ class _BaseTestCreateProject(TestCase):
             ),
             pyseed.ConfigKey.min_py_version: "3.9",
             pyseed.ConfigKey.max_py_version: "3.12",
-            pyseed.ConfigKey.add_typing_extensions: False,
             pyseed.ConfigKey.add_py_typed: True,
             pyseed.ConfigKey.update_pc_hooks_on_schedule: False,
         }

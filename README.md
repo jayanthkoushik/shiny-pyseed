@@ -136,12 +136,10 @@ specifying them are:
    this cannot be lower than 3.9.
 8. `--pyM <3.MINOR.PATCH>`: Maximum Python version. This only affects
    the versions used for running tests with GitHub actions.
-9. `--typing-extensions`/`--no-typing-extensions`: Whether to add the
-   `typing_extensions` package as a dependency. False by default.
-11. `--py-typed`/`--no-py-typed`: Whether to add a `py.typed` file to
-    the Python package, indicating that the package provides type hints.
-    True by default.
-12. `--pc-cron`/`--no-pc-cron`: Whether to add support for updating
+9. `--py-typed`/`--no-py-typed`: Whether to add a `py.typed` file to the
+   Python package, indicating that the package provides type hints. True
+   by default.
+10. `--pc-cron`/`--no-pc-cron`: Whether to add support for updating
     pre-commit hooks monthly through GitHub actions. This will create a
     periodic GitHub action that will run `pre-commit autoupdate` and
     create a pull request with the changes.
@@ -158,15 +156,14 @@ bootstrapped with the following operations:
 3. A Git repository is initialized.
 4. `poetry install` is called to create the project virtual environment,
    and install the project itself.
-5. `typing_extensions` is added as a dependency if configured.
-6. Dev dependencies are added: `pre-commit`, `ruff`, `mypy`, `sphinx`,
+5. Dev dependencies are added: `pre-commit`, `ruff`, `mypy`, `sphinx`,
    `sphinx-markdown-builder`, `mkdocstrings`, `mkdocs-material`,
    `mkdocs-gen-files`, `mkdocs-literate-nav`, `mike`.
-7. pre-commit hooks are installed and updated.
-8. Prettier is used to format `pyproject.toml`.
-9. Documentation is built.
-10. `mkdocs build` is called to verify that the site can be built.
-11. Initial Git commit is created.
+6. pre-commit hooks are installed and updated.
+7. Prettier is used to format `pyproject.toml`.
+8. Documentation is built.
+9. `mkdocs build` is called to verify that the site can be built.
+10. Initial Git commit is created.
 
 <!--------------------------------------------------------------------->
 
