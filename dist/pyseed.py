@@ -1431,6 +1431,13 @@ on:
         type: string
         required: false
         default: ""
+      publish-to-pypi:
+        description: >
+          Publish the project to PyPI. Requires a repository secret named
+          'PYPI_TOKEN' with a suitable API key.
+        type: boolean
+        required: false
+        default: true
 
 concurrency:
   group: ${{ github.workflow }}
@@ -1484,6 +1491,7 @@ jobs:
 
       - run: poetry build
       - run: poetry publish -u __token__ -p $PYPI_TOKEN
+        if: ${{ inputs.publish-to-pypi }}
         env:
           PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
 
