@@ -1246,7 +1246,6 @@ docs/_build/
 www/_site/
 .mypy_cache/
 .ruff_cache/
-.prettier_cache/
 __pycache__/
 .ipynb_checkpoints/
 
@@ -1297,7 +1296,7 @@ repos:
     hooks:
       - id: prettier
         name: "Prettify non-code files"
-        entry: prettier --write --ignore-unknown --cache-location .prettier_cache/cache.json
+        entry: prettier --write --ignore-unknown
         additional_dependencies:
           - prettier
           - prettier-plugin-toml

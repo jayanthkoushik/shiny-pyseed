@@ -43,7 +43,7 @@ repos:
     hooks:
       - id: prettier
         name: "Prettify non-code files"
-        entry: prettier --write --ignore-unknown --cache-location .prettier_cache/cache.json
+        entry: prettier --write --ignore-unknown
         additional_dependencies:
           - prettier
           - prettier-plugin-toml
