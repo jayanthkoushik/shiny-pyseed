@@ -46,7 +46,6 @@ repos:
         entry: prettier --write --ignore-unknown --cache-location .prettier_cache/cache.json
         additional_dependencies:
           - prettier
-          - prettier-plugin-sh
           - prettier-plugin-toml
 
   - repo: local

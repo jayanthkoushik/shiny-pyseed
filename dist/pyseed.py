@@ -1300,7 +1300,6 @@ repos:
         entry: prettier --write --ignore-unknown --cache-location .prettier_cache/cache.json
         additional_dependencies:
           - prettier
-          - prettier-plugin-sh
           - prettier-plugin-toml
 
   - repo: local
@@ -1355,10 +1354,7 @@ poetry.lock
 
 PRETTIER_RC = r"""// https://github.com/prettier/prettier/issues/15388#issuecomment-1717746872
 const config = {
-  plugins: [
-    require.resolve("prettier-plugin-sh"),
-    require.resolve("prettier-plugin-toml"),
-  ],
+  plugins: [require.resolve("prettier-plugin-toml")],
 };
 
 module.exports = config;

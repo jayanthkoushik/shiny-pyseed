@@ -319,7 +319,7 @@ checking. Its settings are in the `[tool.mypy]` section of
 
 [Prettier](https://prettier.io) is used to format all non-Python files.
 Default settings are used, and the config file, `.prettierrc.js` is only
-used to load additional plugins for prettifying `sh` and `toml` files.
+used to load an additional plugin for prettifying `toml` files.
 Files to be ignored by Prettier are listed in `.prettierignore`. As a
 general rule, automatically generated files should be added here.
 
