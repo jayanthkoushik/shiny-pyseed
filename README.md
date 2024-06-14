@@ -90,6 +90,15 @@ creation) is skipped in non-interactive mode.**
 
 <!--------------------------------------------------------------------->
 
+### Barebones mode
+
+shiny-pyseed can also create a barebones project which does not include:
+documentation/website support, commit message enforcing, and GitHub
+workflows. Also in barebones mode, the project virtual environment is
+created in [non-package mode](https://python-poetry.org/docs/basic-usage/#operating-modes).
+
+<!--------------------------------------------------------------------->
+
 ## Bootstrapping details
 
 <!--------------------------------------------------------------------->
@@ -115,34 +124,40 @@ modes:
 The available configurations, and the command line arguments for
 specifying them are:
 
-1. `--project <PATH>`: Path where the new project is created. This is
+1. `--barebones/--no-barebones`: Whether to enable barebones mode. If
+   enabled, some of the other arguments will be ignored, and a barebones
+   project will be created. False by default.
+2. `--project <PATH>`: Path where the new project is created. This is
    the only required configuration.
-2. `--description <DESCRIPTION>`: Project description.
-3. `--url <URL>`: URL for project docs. This is needed by MkDocs; see <https://www.mkdocs.org/user-guide/configuration/#site_url>.
-4. `--pkg <PKG>`: Main Python package name. The project is initialized
+3. `--description <DESCRIPTION>`: Project description.
+4. `--url <URL>`: URL for project docs. This is needed by MkDocs; see <https://www.mkdocs.org/user-guide/configuration/#site_url>.
+   It is ignored in barebones mode, which does not have MkDocs support.
+5. `--pkg <PKG>`: Main Python package name. The project is initialized
    with a single package of this name. If not specified, the final
    component of the project path will be used; for example if the
    project path is `foo/bar/spam-ham`, then the default main package
    name will be `spam_ham`.
-5. `--mit`/`--no-mit`: Whether to add the MIT license to the project.
+6. `--mit`/`--no-mit`: Whether to add the MIT license to the project.
    True by default.
-6. `--authors <AUTHORS>`: Project authors. The project authors must be
+7. `--authors <AUTHORS>`: Project authors. The project authors must be
    specified as a comma separated list of names and emails in the form
    `name <email>`. For example `Author One <aone@example.org>, Author
    Two <atwo@example.org>`. If not provided, the script will try to read
    the global Git config to get the user name and email, and use it as
    the sole author.
-7. `--pym <3.MINOR.PATCH>`: Minimum supported Python version. Note that
+8. `--pym <3.MINOR.PATCH>`: Minimum supported Python version. Note that
    this cannot be lower than 3.9.
-8. `--pyM <3.MINOR.PATCH>`: Maximum Python version. This only affects
-   the versions used for running tests with GitHub actions.
-9. `--py-typed`/`--no-py-typed`: Whether to add a `py.typed` file to the
-   Python package, indicating that the package provides type hints. True
-   by default.
-10. `--pc-cron`/`--no-pc-cron`: Whether to add support for updating
+9. `--pyM <3.MINOR.PATCH>`: Maximum Python version. This only affects
+   the versions used for running tests with GitHub actions. It has no
+   effect in barebones mode since GitHub workflows are not included.
+10. `--py-typed`/`--no-py-typed`: Whether to add a `py.typed` file to
+    the Python package, indicating that the package provides type hints.
+    True by default.
+11. `--pc-cron`/`--no-pc-cron`: Whether to add support for updating
     pre-commit hooks monthly through GitHub actions. This will create a
     periodic GitHub action that will run `pre-commit autoupdate` and
-    create a pull request with the changes.
+    create a pull request with the changes. It is ignored in barebones
+    mode.
 
 <!--------------------------------------------------------------------->
 

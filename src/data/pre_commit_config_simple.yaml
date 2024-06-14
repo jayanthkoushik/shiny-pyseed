@@ -1,0 +1,40 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: check-case-conflict
+      - id: check-symlinks
+      - id: destroyed-symlinks
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+      - id: trailing-whitespace
+      - id: check-merge-conflict
+      - id: check-vcs-permalinks
+      - id: detect-private-key
+
+  - repo: https://github.com/streetsidesoftware/cspell-cli
+    rev: v8.6.0
+    hooks:
+      - id: cspell
+        name: Spell check docs
+        files: "docs/.*\\.md|README.md"
+
+  - repo: local
+    hooks:
+      - id: format
+        name: Format Python files
+        language: system
+        entry: poetry run ruff format
+        types: [python]
+      - id: lint
+        name: Lint Python files
+        language: system
+        entry: poetry run ruff check
+        types: [python]
+        pass_filenames: false
+      - id: mypy
+        name: Type check Python files
+        entry: poetry run mypy .
+        language: system
+        types: [python]
+        pass_filenames: false

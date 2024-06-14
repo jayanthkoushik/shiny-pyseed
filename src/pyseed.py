@@ -478,6 +478,7 @@ class BoolConfigKeySpec(ConfigKeySpec):
 
 
 class ConfigKey(Enum):
+    barebones = BoolConfigKeySpec("barebones", "create barebones project", False)
     project = StrConfigKeySpec("path", "project path", None, validate_string_non_empty)
     description = StrConfigKeySpec("desc", "project description", "")
     url = StrConfigKeySpec("url", "project docs site", "")
@@ -496,7 +497,7 @@ class ConfigKey(Enum):
     )
     max_py_version = StrConfigKeySpec(
         "pyM",
-        "maximum python3 version (for github actions)",
+        "maximum python3 version (for github actions; ignored in barebones mode)",
         "3.12",
         validate_string_python_version,
     )
@@ -504,8 +505,17 @@ class ConfigKey(Enum):
         "py_typed", "add 'py.typed' file indicating typing support", True
     )
     update_pc_hooks_on_schedule = BoolConfigKeySpec(
-        "pc_cron", "add support for updating pre-commit hooks monthly", True
+        "pc_cron",
+        "add support for updating pre-commit hooks monthly (ignored in barebones mode)",
+        True,
     )
+
+
+BAREBONES_MODE_IGNORED_CONFIG_KEYS = [
+    ConfigKey.url,
+    ConfigKey.max_py_version,
+    ConfigKey.update_pc_hooks_on_schedule,
+]
 
 
 ########################################################################
@@ -581,6 +591,10 @@ def get_conf_interactively(
     config: dict[ConfigKey, Any] = base_config.copy() if base_config is not None else {}
     for config_key in ConfigKey:
         if config_key not in config:
+            if config_key in BAREBONES_MODE_IGNORED_CONFIG_KEYS and config.get(
+                ConfigKey.barebones, False
+            ):
+                continue
             config_val = config_key.value.get_value_interactively()
             config[config_key] = config_val
         try:
@@ -633,9 +647,13 @@ def init_project(config: dict[ConfigKey, Any]):
 
     min_py_minor_ver = config[ConfigKey.min_py_version].split(".")[1]
 
-    vwritetext(
-        project_path / "pyproject.toml",
-        PYPROJECT_TEMPLATE.format(
+    if config[ConfigKey.barebones]:
+        pyproject = PYPROJECT_SIMPLE_TEMPLATE.format(
+            min_python_version=config[ConfigKey.min_py_version],
+            mypy_target_version=f"py3{min_py_minor_ver}",
+        )
+    else:
+        pyproject = PYPROJECT_TEMPLATE.format(
             name_dump=project_name_dump,
             description_dump=json.dumps(config[ConfigKey.description]),
             authors_dump=json.dumps(authors),
@@ -643,20 +661,21 @@ def init_project(config: dict[ConfigKey, Any]):
             package=config[ConfigKey.main_pkg],
             min_python_version=config[ConfigKey.min_py_version],
             mypy_target_version=f"py3{min_py_minor_ver}",
-        ),
-    )
+        )
+    vwritetext(project_path / "pyproject.toml", pyproject)
 
-    vprint(f"+ WRITE {project_path / 'mkdocs.yml'}", file=sys.stderr)
-    vwritetext(
-        project_path / "mkdocs.yml",
-        MKDOCS_CONFIG_TEMPLATE.format(
-            name_dump=project_name_dump,
-            site_url=config[ConfigKey.url],
-            description_dump=json.dumps(f"Documentation for '{project_name}'."),
-            author_dump=json.dumps(comma_sep_author_names),
-            copyright_dump=json.dumps(f"Copyright (c) {comma_sep_author_names}"),
-        ),
-    )
+    if not config[ConfigKey.barebones]:
+        vprint(f"+ WRITE {project_path / 'mkdocs.yml'}", file=sys.stderr)
+        vwritetext(
+            project_path / "mkdocs.yml",
+            MKDOCS_CONFIG_TEMPLATE.format(
+                name_dump=project_name_dump,
+                site_url=config[ConfigKey.url],
+                description_dump=json.dumps(f"Documentation for '{project_name}'."),
+                author_dump=json.dumps(comma_sep_author_names),
+                copyright_dump=json.dumps(f"Copyright (c) {comma_sep_author_names}"),
+            ),
+        )
 
     license_data = (
         MIT_LICENSE_TEMPLATE.format(author=comma_sep_author_names)
@@ -669,7 +688,27 @@ def init_project(config: dict[ConfigKey, Any]):
         title=project_name, description=config[ConfigKey.description]
     ).strip()
 
-    pre_commit_config = PRE_COMMIT_CONFIG
+    pre_commit_config = (
+        PRE_COMMIT_CONFIG_SIMPLE if config[ConfigKey.barebones] else PRE_COMMIT_CONFIG
+    )
+
+    if config[ConfigKey.barebones]:
+        for fpath, fdata in [
+            ("README.md", readme),
+            (".cspell.json", CSPELL_CONFIG),
+            (".editorconfig", EDITORCONFIG),
+            (".gitignore", GITIGNORE),
+            (".pre-commit-config.yaml", pre_commit_config),
+        ]:
+            vwritetext(project_path / fpath, fdata)
+
+        main_pkg_dir = project_path / config[ConfigKey.main_pkg]
+        vprint(f"+ MKDIR {main_pkg_dir}", file=sys.stderr)
+        main_pkg_dir.mkdir(parents=True)
+        vtouch(main_pkg_dir / "__init__.py")
+
+        vtouch(project_path / "project-words.txt")
+        return
 
     min_py_minor_version = int(config[ConfigKey.min_py_version].split(".")[1])
     max_py_minor_version = int(config[ConfigKey.max_py_version].split(".")[1])
@@ -743,16 +782,12 @@ def init_project(config: dict[ConfigKey, Any]):
         vprint(f"+ SYMLINK {web_src_dir / link_tgt} -> {link_src}", file=sys.stderr)
         os.symlink(Path("..") / ".." / link_src, web_src_dir / link_tgt)
 
-    for fpath in (project_path / scripts_dir).glob("*"):
-        vprint(f"+ CHMOD+x {fpath}", file=sys.stderr)
+    for script_path in (project_path / scripts_dir).glob("*"):
+        vprint(f"+ CHMOD+x {script_path}", file=sys.stderr)
         os.chmod(
             fpath,
             stat.S_IRWXU | stat.S_IRGRP | stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH,
         )
-
-    vprint(file=sys.stderr)
-    vprint(f"+ CHDIR {project_path}", file=sys.stderr)
-    os.chdir(project_path)
 
 
 ########################################################################
@@ -765,47 +800,59 @@ def create_project(config: dict[ConfigKey, Any]):
     project_path = Path(config[ConfigKey.project])
     scripts_dir = Path("scripts")
 
+    vprint(file=sys.stderr)
+    vprint(f"+ CHDIR {project_path}", file=sys.stderr)
+    os.chdir(project_path)
+
     vrun(["git", "init", "-b", "master"])
 
     vrun(["poetry", "install", "--all-extras"])
-    dev_dependencies = [
-        "pre-commit",
-        "ruff",
-        "mypy",
-        "sphinx",
-        "git+https://github.com/liran-funaro/sphinx-markdown-builder",
-        "mkdocstrings[python-legacy]",
-        "mkdocs-material",
-        "mkdocs-gen-files",
-        "mkdocs-literate-nav",
-        "git+https://github.com/jimporter/mike",
-    ]
+    dev_dependencies = ["pre-commit", "ruff", "mypy"]
+    if not config[ConfigKey.barebones]:
+        dev_dependencies.extend(
+            [
+                "sphinx",
+                "git+https://github.com/liran-funaro/sphinx-markdown-builder",
+                "mkdocstrings[python-legacy]",
+                "mkdocs-material",
+                "mkdocs-gen-files",
+                "mkdocs-literate-nav",
+                "git+https://github.com/jimporter/mike",
+            ]
+        )
     vrun(["poetry", "add", "--group", "dev", *dev_dependencies])
 
     vrun(["poetry", "run", "pre-commit", "install"])
     vrun(["poetry", "run", "pre-commit", "autoupdate"])
-    vrun(
-        [
-            "poetry",
-            "run",
-            "pre-commit",
-            "run",
-            "prettier",
-            "--files",
-            "pyproject.toml",
-            "mkdocs.yml",
-            "LICENSE.md",
-            "README.md",
-        ],
-        check=False,
-    )
-    vrun(["poetry", "run", "python", str(scripts_dir / "make_docs.py")])
-    vrun(["poetry", "run", "mkdocs", "build"])
+
+    if not config[ConfigKey.barebones]:
+        vrun(
+            [
+                "poetry",
+                "run",
+                "pre-commit",
+                "run",
+                "prettier",
+                "--files",
+                "pyproject.toml",
+                "mkdocs.yml",
+                "LICENSE.md",
+                "README.md",
+            ],
+            check=False,
+        )
+        vrun(["poetry", "run", "python", str(scripts_dir / "make_docs.py")])
+        vrun(["poetry", "run", "mkdocs", "build"])
 
     vrun(["git", "add", "."])
     env = os.environ.copy()
-    env["SKIP"] = "cspell,test"
-    vrun(["git", "commit", "-m", "chore: initial commit"], env=env)
+    env["SKIP"] = "cspell"
+    if not config[ConfigKey.barebones]:
+        env["SKIP"] += ",test"
+    commit_msg = (
+        "Initial commit" if config[ConfigKey.barebones] else "chore: initial commit"
+    )
+    vrun(["git", "commit", "-m", commit_msg], env=env)
 
     vprint(f"\nsuccessfully initialized project at {project_path}", file=sys.stderr)
 
@@ -946,7 +993,7 @@ def main():
         init_project(config)
         create_project(config)
         project_created = True
-        if config_mode == ConfigMode.non_interactive:
+        if config_mode == ConfigMode.non_interactive or config[ConfigKey.barebones]:
             return
 
         do_setup_github = get_yes_no_input(
@@ -983,6 +1030,9 @@ def main():
 PYPROJECT_TEMPLATE = r"""!!!pyproject.template.toml!!!
 """
 
+PYPROJECT_SIMPLE_TEMPLATE = r"""!!!pyproject_simple.template.toml!!!
+"""
+
 MKDOCS_CONFIG_TEMPLATE = r"""!!!mkdocs_config.template.yml!!!
 """
 
@@ -1008,6 +1058,9 @@ GITIGNORE = r"""!!!gitignore!!!
 """
 
 PRE_COMMIT_CONFIG = r"""!!!pre_commit_config.yaml!!!
+"""
+
+PRE_COMMIT_CONFIG_SIMPLE = r"""!!!pre_commit_config_simple.yaml!!!
 """
 
 PRETTIER_IGNORE = r"""!!!prettier_ignore!!!

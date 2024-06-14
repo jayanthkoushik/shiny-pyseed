@@ -535,6 +535,33 @@ class TestGetConf(TestCase):
             },
         )
 
+    def test_get_conf_skips_barebones_ignored_keys(self):
+        class DummyConfigKey(Enum):
+            barebones = pyseed.BoolConfigKeySpec("barebones", description="")
+            dummy_str_key = pyseed.StrConfigKeySpec("dummy_str_key", description="")
+            dummy_bool_key = pyseed.BoolConfigKeySpec("dummy_bool_key", description="")
+
+        for barebones in ["yes", "no"]:
+            with (
+                patch.multiple(
+                    "pyseed",
+                    ConfigKey=DummyConfigKey,
+                    BAREBONES_MODE_IGNORED_CONFIG_KEYS=[DummyConfigKey.dummy_str_key],
+                ),
+                patch.multiple(
+                    "sys", stdin=StringIO(f"{barebones}\nyes\nyes\n"), stdout=StringIO()
+                ),
+            ):
+                config = pyseed.get_conf_interactively()
+            target_dict = {
+                DummyConfigKey.barebones: barebones == "yes",
+                DummyConfigKey.dummy_bool_key: True,
+            }
+            if barebones == "no":
+                target_dict[DummyConfigKey.dummy_str_key] = "yes"
+            with self.subTest(barebones=barebones):
+                self.assertDictEqual(config, target_dict)
+
     def test_parse_cmdline_args_returns_dict_with_config_keys(self):
         argv = ["--dummy-str-key", "hello, world", "--no-dummy-bool-key"]
         mock_argparser = self._get_patched_argparser(argv)
@@ -686,6 +713,7 @@ class _BaseTestCreateProject(TestCase):
         self.tempdir = TemporaryDirectory()
         self.project_name = Path(self.tempdir.name).stem
         self.config: dict[pyseed.ConfigKey, Any] = {
+            pyseed.ConfigKey.barebones: False,
             pyseed.ConfigKey.project: Path(self.tempdir.name) / self.project_name,
             pyseed.ConfigKey.description: "test description",
             pyseed.ConfigKey.url: "http://test.example.com",
@@ -740,29 +768,80 @@ class TestInitProject(_BaseTestCreateProject):
             "project-words.txt",
             "pyproject.toml",
         ]:
-            self.assertTrue((project_dir / fname).exists())
+            with self.subTest(fname):
+                self.assertTrue((project_dir / fname).exists())
 
         www_src_dir = project_dir / "www" / "src"
         for fname in ["CHANGELOG.md", "LICENSE.md"]:
-            self.assertEqual(
-                (www_src_dir / fname).resolve(), (project_dir / fname).resolve()
-            )
+            with self.subTest(fname):
+                self.assertEqual(
+                    (www_src_dir / fname).resolve(), (project_dir / fname).resolve()
+                )
         self.assertEqual(
             (www_src_dir / "index.md").resolve(), (project_dir / "README.md").resolve()
         )
 
-    def test_init_project_does_not_added_suppressed_files(self):
-        self.config[pyseed.ConfigKey.add_mit_license] = False
-        self.config[pyseed.ConfigKey.add_py_typed] = False
+    def test_init_project_writes_all_expected_files_in_barebones_mode(self):
+        self.config[pyseed.ConfigKey.barebones] = True
+        for key in pyseed.BAREBONES_MODE_IGNORED_CONFIG_KEYS:
+            del self.config[key]
 
         pyseed.init_project(self.config)
-
         project_dir = Path(self.tempdir.name) / self.project_name
-        self.assertTrue(project_dir.exists())
-        self.assertFalse((project_dir / "src/test_project/py.typed").exists())
 
-        license_text = (project_dir / "LICENSE.md").read_text().strip()
-        self.assertEqual(license_text, "")
+        self.assertTrue(project_dir.exists())
+        for fname in [
+            "test_project/__init__.py",
+            ".cspell.json",
+            ".editorconfig",
+            ".gitignore",
+            ".pre-commit-config.yaml",
+            "LICENSE.md",
+            "README.md",
+            "project-words.txt",
+            "pyproject.toml",
+        ]:
+            with self.subTest(fname):
+                self.assertTrue((project_dir / fname).exists())
+
+        for fname in [
+            ".github",
+            "scripts",
+            "src",
+            "tests",
+            "www",
+            ".commitlintrc.yaml",
+            ".gitattributes",
+            ".prettierignore",
+            ".prettierrc.js",
+            "CHANGELOG.md",
+            "mkdocs.yml",
+        ]:
+            with self.subTest(fname):
+                self.assertFalse((project_dir / fname).exists())
+
+    def test_init_project_does_not_added_suppressed_files(self):
+        for i, barebones in enumerate([False, True]):
+            with self.subTest(barebones=barebones):
+                if i == 1:
+                    self.tearDown()
+                    self.setUp()
+                self.config[pyseed.ConfigKey.barebones] = barebones
+                self.config[pyseed.ConfigKey.add_mit_license] = False
+                self.config[pyseed.ConfigKey.add_py_typed] = False
+
+                if barebones:
+                    for key in pyseed.BAREBONES_MODE_IGNORED_CONFIG_KEYS:
+                        del self.config[key]
+
+                pyseed.init_project(self.config)
+
+                project_dir = Path(self.tempdir.name) / self.project_name
+                self.assertTrue(project_dir.exists())
+                self.assertFalse((project_dir / "src/test_project/py.typed").exists())
+
+                license_text = (project_dir / "LICENSE.md").read_text().strip()
+                self.assertEqual(license_text, "")
 
     @skipUnless(
         HAVE_TOML and HAVE_YAML, "need tomllib and pyyaml to test template renders"
@@ -864,6 +943,35 @@ class TestInitProject(_BaseTestCreateProject):
         readme_data = readme_path.read_text()
         self.assertEqual(readme_data, f'# {self.project_name}\n\n{{hello}}\n"world"\n')
 
+    @skipUnless(
+        HAVE_TOML and HAVE_YAML, "need tomllib and pyyaml to test template renders"
+    )
+    def test_init_project_renders_templates_correctly_in_barebones_mode(self):
+        self.config[pyseed.ConfigKey.barebones] = True
+        self.config[pyseed.ConfigKey.description] = '{hello}\n"world"'
+        self.config[pyseed.ConfigKey.authors] = (
+            "So'me \"One <someone@example.com>, No Email"
+        )
+
+        for key in pyseed.BAREBONES_MODE_IGNORED_CONFIG_KEYS:
+            del self.config[key]
+
+        pyseed.init_project(self.config)
+        project_dir = Path(self.tempdir.name) / self.project_name
+
+        pyproject_path = project_dir / "pyproject.toml"
+        with pyproject_path.open("rb") as f:
+            pyproject_toml = tomllib.load(f)
+        poetry_data = pyproject_toml["tool"]["poetry"]
+        self.assertDictEqual(
+            poetry_data,
+            {
+                "package-mode": False,
+                "dependencies": {"python": "^3.9"},
+                "group": {"dev": {"dependencies": {}}},
+            },
+        )
+
     @skipUnless(HAVE_YAML, "need pyyaml to test yaml renders")
     def test_init_project_does_not_add_schedule_to_hooks_workflow_if_disabled(self):
         pyseed.init_project(self.config)
@@ -889,6 +997,17 @@ class TestCreateProject(_BaseTestCreateProject):
             ["git", "log", "--max-count=1", "--pretty=format:%s"], capture_output=True
         )
         self.assertEqual(pdone.stdout.strip(), "chore: initial commit")
+
+    def test_create_project_runs_without_error_in_barebones_mode(self):
+        self.config[pyseed.ConfigKey.barebones] = True
+        for key in pyseed.BAREBONES_MODE_IGNORED_CONFIG_KEYS:
+            del self.config[key]
+        pyseed.init_project(self.config)
+        pyseed.create_project(self.config)
+        pdone = pyseed.vrun(
+            ["git", "log", "--max-count=1", "--pretty=format:%s"], capture_output=True
+        )
+        self.assertEqual(pdone.stdout.strip(), "Initial commit")
 
 
 @skipUnless(
@@ -986,6 +1105,24 @@ class TestMain(_BaseTestCreateProject):
                         self.mock_setup_github.assert_not_called()
                     else:
                         self.mock_setup_github.assert_called_once()
+
+    def test_main_does_not_setup_github_in_barebones_mode(self):
+        self.config[pyseed.ConfigKey.barebones] = True
+        mock_get_conf = MagicMock(
+            return_value=(pyseed.ConfigMode.interactive, self.config)
+        )
+        with (
+            patch.multiple(
+                "pyseed",
+                get_conf=mock_get_conf,
+                init_project=self.mock_init_project,
+                create_project=self.mock_create_project,
+                setup_github=self.mock_setup_github,
+            ),
+            patch.multiple("sys", stdin=StringIO(initial_value="y"), stdout=StringIO()),
+        ):
+            pyseed.main()
+            self.mock_setup_github.assert_not_called()
 
     def test_main_does_not_clean_up_in_non_interactive_mode(self):
         self.project_path = Path(self.tempdir.name) / self.project_name
