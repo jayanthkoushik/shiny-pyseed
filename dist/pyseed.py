@@ -614,10 +614,12 @@ def get_conf() -> tuple[ConfigMode, dict[ConfigKey, Any]]:
 
 
 ########################################################################
-# FUNCTION TO CREATE NEW PROJECT STRUCTURE
+# FUNCTION TO INITIALIZE PROJECT STRUCTURE
+# This function will create the project directory and write data files.
+# Template files are formatted with data from config.
 
 
-def create_project(config: dict[ConfigKey, Any]):
+def init_project(config: dict[ConfigKey, Any]):
     authors = [
         author
         for author_raw in config[ConfigKey.authors].split(",")
@@ -753,6 +755,17 @@ def create_project(config: dict[ConfigKey, Any]):
     vprint(file=sys.stderr)
     vprint(f"+ CHDIR {project_path}", file=sys.stderr)
     os.chdir(project_path)
+
+
+########################################################################
+# FUNCTION TO INSTALL AND SETUP NEW PROJECT
+# This function will create a git repository, install dependencies, and
+# create an initial commit.
+
+
+def create_project(config: dict[ConfigKey, Any]):
+    project_path = Path(config[ConfigKey.project])
+    scripts_dir = Path("scripts")
 
     vrun(["git", "init", "-b", "master"])
 
@@ -932,6 +945,7 @@ def main():
     project_created = False
 
     try:
+        init_project(config)
         create_project(config)
         project_created = True
         if config_mode == ConfigMode.non_interactive:

@@ -23,6 +23,22 @@ try:
 except ImportError:
     HAVE_NACL = False
 
+HAVE_YAML: bool
+try:
+    import yaml
+
+    HAVE_YAML = True
+except ImportError:
+    HAVE_YAML = False
+
+HAVE_TOML: bool
+try:
+    import tomllib
+
+    HAVE_TOML = True
+except ImportError:
+    HAVE_TOML = False
+
 sys.path.insert(0, "dist")
 
 import pyseed
@@ -689,12 +705,185 @@ class _BaseTestCreateProject(TestCase):
         self.tempdir.cleanup()
 
 
+class TestInitProject(_BaseTestCreateProject):
+    def test_init_project_writes_all_expected_files(self):
+        pyseed.init_project(self.config)
+        project_dir = Path(self.tempdir.name) / self.project_name
+
+        self.assertTrue(project_dir.exists())
+        for fname in [
+            ".github/workflows/check-pr.yml",
+            ".github/workflows/release-new-version.yml",
+            ".github/workflows/run-tests.yml",
+            ".github/workflows/update-pre-commit-hooks.yml",
+            "scripts/commit_and_tag_version.py",
+            "scripts/gen_site_usage_pages.py",
+            "scripts/make_docs.py",
+            "scripts/verify_pr_commits.py",
+            "src/test_project/__init__.py",
+            "src/test_project/_version.py",
+            "src/test_project/py.typed",
+            "tests/__init__.py",
+            "www/theme/overrides/main.html",
+            ".commitlintrc.yaml",
+            ".cspell.json",
+            ".editorconfig",
+            ".gitattributes",
+            ".gitignore",
+            ".pre-commit-config.yaml",
+            ".prettierignore",
+            ".prettierrc.js",
+            "CHANGELOG.md",
+            "LICENSE.md",
+            "README.md",
+            "mkdocs.yml",
+            "project-words.txt",
+            "pyproject.toml",
+        ]:
+            self.assertTrue((project_dir / fname).exists())
+
+        www_src_dir = project_dir / "www" / "src"
+        for fname in ["CHANGELOG.md", "LICENSE.md"]:
+            self.assertEqual(
+                (www_src_dir / fname).resolve(), (project_dir / fname).resolve()
+            )
+        self.assertEqual(
+            (www_src_dir / "index.md").resolve(), (project_dir / "README.md").resolve()
+        )
+
+    def test_init_project_does_not_added_suppressed_files(self):
+        self.config[pyseed.ConfigKey.add_mit_license] = False
+        self.config[pyseed.ConfigKey.add_py_typed] = False
+
+        pyseed.init_project(self.config)
+
+        project_dir = Path(self.tempdir.name) / self.project_name
+        self.assertTrue(project_dir.exists())
+        self.assertFalse((project_dir / "src/test_project/py.typed").exists())
+
+        license_text = (project_dir / "LICENSE.md").read_text().strip()
+        self.assertEqual(license_text, "")
+
+    @skipUnless(
+        HAVE_TOML and HAVE_YAML, "need tomllib and pyyaml to test template renders"
+    )
+    def test_init_project_renders_templates_correctly(self):
+        self.config[pyseed.ConfigKey.description] = '{hello}\n"world"'
+        self.config[pyseed.ConfigKey.authors] = (
+            "So'me \"One <someone@example.com>, No Email"
+        )
+        self.config[pyseed.ConfigKey.update_pc_hooks_on_schedule] = True
+
+        pyseed.init_project(self.config)
+        project_dir = Path(self.tempdir.name) / self.project_name
+
+        pyproject_path = project_dir / "pyproject.toml"
+        with pyproject_path.open("rb") as f:
+            pyproject_toml = tomllib.load(f)
+        poetry_data = pyproject_toml["tool"]["poetry"]
+        self.assertDictEqual(
+            poetry_data,
+            {
+                "name": self.project_name,
+                "description": '{hello}\n"world"',
+                "version": "0.0.0",
+                "authors": ["So'me \"One <someone@example.com>", "No Email"],
+                "license": "MIT",
+                "readme": "README.md",
+                "packages": [{"include": "test_project", "from": "src"}],
+                "include": [
+                    {"path": "tests", "format": "sdist"},
+                    {"path": "docs", "format": "sdist"},
+                    {"path": "CHANGELOG.md", "format": "sdist"},
+                ],
+                "dependencies": {"python": "^3.9"},
+                "extras": {},
+                "group": {"dev": {"dependencies": {}}},
+            },
+        )
+
+        update_hooks_workflow_path = (
+            project_dir / ".github" / "workflows" / "update-pre-commit-hooks.yml"
+        )
+        with update_hooks_workflow_path.open("rb") as f:
+            update_hooks_workflow_data = yaml.load(f, yaml.Loader)
+        self.assertEqual(
+            # PyYAML treats "on" as True.
+            update_hooks_workflow_data[True]["schedule"],
+            [{"cron": "0 0 1 * *"}],
+        )
+
+        mkdocs_cfg_path = project_dir / "mkdocs.yml"
+        with mkdocs_cfg_path.open("rb") as f:
+            mkdocs_cfg_data = yaml.load(f, yaml.Loader)
+        self.assertEqual(mkdocs_cfg_data["site_name"], self.project_name)
+        self.assertEqual(mkdocs_cfg_data["site_url"], "http://test.example.com")
+        self.assertEqual(
+            mkdocs_cfg_data["site_description"],
+            f"Documentation for '{self.project_name}'.",
+        )
+        self.assertEqual(mkdocs_cfg_data["site_author"], "So'me \"One, No Email")
+        self.assertEqual(
+            mkdocs_cfg_data["copyright"], "Copyright (c) So'me \"One, No Email"
+        )
+
+        run_tests_workflow_path = (
+            project_dir / ".github" / "workflows" / "run-tests.yml"
+        )
+        with run_tests_workflow_path.open("rb") as f:
+            run_tests_workflow_data = yaml.load(f, yaml.Loader)
+        self.assertEqual(
+            run_tests_workflow_data["jobs"]["main"]["strategy"]["matrix"][
+                "python-version"
+            ],
+            ["3.9", "3.10", "3.11", "3.12"],
+        )
+        self.assertEqual(
+            run_tests_workflow_data["jobs"]["main"]["strategy"]["fail-fast"],
+            "${{ inputs.fail-fast }}",
+        )
+        self.assertEqual(
+            run_tests_workflow_data["jobs"]["main"]["runs-on"], "${{ matrix.os }}"
+        )
+        self.assertEqual(
+            run_tests_workflow_data["jobs"]["main"]["steps"][1]["with"][
+                "python-version"
+            ],
+            "${{ matrix.python-version }}",
+        )
+
+        license_path = project_dir / "LICENSE.md"
+        license_data = license_path.read_text()
+        self.assertTrue(
+            license_data.startswith(
+                "# MIT License\n\nCopyright (c) So'me \"One, No Email"
+            )
+        )
+
+        readme_path = project_dir / "README.md"
+        readme_data = readme_path.read_text()
+        self.assertEqual(readme_data, f'# {self.project_name}\n\n{{hello}}\n"world"\n')
+
+    @skipUnless(HAVE_YAML, "need pyyaml to test yaml renders")
+    def test_init_project_does_not_add_schedule_to_hooks_workflow_if_disabled(self):
+        pyseed.init_project(self.config)
+        project_dir = Path(self.tempdir.name) / self.project_name
+
+        update_hooks_workflow_path = (
+            project_dir / ".github" / "workflows" / "update-pre-commit-hooks.yml"
+        )
+        with update_hooks_workflow_path.open("rb") as f:
+            update_hooks_workflow_data = yaml.load(f, yaml.Loader)
+        self.assertNotIn("schedule", update_hooks_workflow_data[True])
+
+
 @skipUnless(
     os.environ.get("PYSEED_TEST_CREATE_PROJECT"),
     "must be enabled explicitly by setting `PYSEED_TEST_CREATE_PROJECT`",
 )
 class TestCreateProject(_BaseTestCreateProject):
     def test_create_project_runs_without_error(self):
+        pyseed.init_project(self.config)
         pyseed.create_project(self.config)
         pdone = pyseed.vrun(
             ["git", "log", "--max-count=1", "--pretty=format:%s"], capture_output=True
@@ -716,6 +905,7 @@ class TestSetupGitHub(_BaseTestCreateProject):
         self.github_api.call(f"repos/{GH_USER}/{self.project_name}", "DELETE")
 
     def test_setup_github_runs_without_error(self):
+        pyseed.init_project(self.config)
         pyseed.create_project(self.config)
         mock_getpass = MagicMock(
             side_effect=[self.github_api.gh_token, "dummy_repo_pat", "dummy_pypi_token"]
@@ -734,10 +924,26 @@ class TestSetupGitHub(_BaseTestCreateProject):
         repo_get_data = self.github_api.call(f"repos/{GH_USER}/{self.project_name}")
         self.assertEqual(repo_get_data.get("name"), self.project_name)
 
+        project_dir = Path(self.tempdir.name) / self.project_name
+        repo_url = repo_get_data["html_url"]
+
+        if HAVE_TOML:
+            pyproject_path = project_dir / "pyproject.toml"
+            with pyproject_path.open("rb") as f:
+                pyproject_toml = tomllib.load(f)
+            self.assertEqual(pyproject_toml["tool"]["poetry"]["repository"], repo_url)
+
+        if HAVE_YAML:
+            mkdocs_cfg_path = project_dir / "mkdocs.yml"
+            with mkdocs_cfg_path.open("rb") as f:
+                mkdocs_cfg_data = yaml.load(f, yaml.Loader)
+            self.assertEqual(mkdocs_cfg_data["repo_url"], repo_url)
+
 
 class TestMain(_BaseTestCreateProject):
     def setUp(self) -> None:
         super().setUp()
+        self.mock_init_project = MagicMock()
         self.mock_create_project = MagicMock()
         self.mock_setup_github = MagicMock()
 
@@ -748,10 +954,12 @@ class TestMain(_BaseTestCreateProject):
         with patch.multiple(
             "pyseed",
             get_conf=mock_get_conf,
+            init_project=self.mock_init_project,
             create_project=self.mock_create_project,
             setup_github=self.mock_setup_github,
         ):
             pyseed.main()
+        self.mock_init_project.assert_called_once()
         self.mock_create_project.assert_called_once()
         self.mock_setup_github.assert_not_called()
 
@@ -767,6 +975,7 @@ class TestMain(_BaseTestCreateProject):
                     patch.multiple(
                         "pyseed",
                         get_conf=mock_get_conf,
+                        init_project=self.mock_init_project,
                         create_project=self.mock_create_project,
                         setup_github=self.mock_setup_github,
                     ),
@@ -794,6 +1003,7 @@ class TestMain(_BaseTestCreateProject):
             patch.multiple(
                 "pyseed",
                 get_conf=mock_get_conf,
+                init_project=self.mock_init_project,
                 create_project=mock_create_project_wrapper,
                 setup_github=self.mock_setup_github,
             ),
@@ -801,6 +1011,7 @@ class TestMain(_BaseTestCreateProject):
         ):
             with self.assertRaises(SystemExit):
                 pyseed.main()
+            self.mock_init_project.assert_called_once()
             self.mock_create_project.assert_called_once()
             self.assertTrue(self.project_path.exists())
             self.mock_setup_github.assert_not_called()
@@ -827,6 +1038,7 @@ class TestMain(_BaseTestCreateProject):
                 patch.multiple(
                     "pyseed",
                     get_conf=mock_get_conf,
+                    init_project=self.mock_init_project,
                     create_project=mock_create_project_wrapper,
                     setup_github=self.mock_setup_github,
                 ),
@@ -864,6 +1076,7 @@ class TestMain(_BaseTestCreateProject):
             patch.multiple(
                 "pyseed",
                 get_conf=mock_get_conf,
+                init_project=self.mock_init_project,
                 create_project=mock_create_project_wrapper,
                 setup_github=mock_setup_github_wrapper,
             ),
