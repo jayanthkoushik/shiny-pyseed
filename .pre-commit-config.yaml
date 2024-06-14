@@ -69,13 +69,7 @@ repos:
       - id: test
         name: Run unit tests
         language: system
-        entry: python3 -m unittest
+        entry: sh -c "PYSEED_TEST_CREATE_PROJECT=1 python3 -m unittest"
         types: [python]
         exclude: "scripts/.*\\.py"
-        pass_filenames: false
-      - id: test-create
-        name: Test project creation
-        language: system
-        entry: sh -c "PYSEED_TEST_CREATE_PROJECT=1 python3 -m unittest"
-        files: "src/.*"
         pass_filenames: false
