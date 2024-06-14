@@ -395,6 +395,48 @@ this page.
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#103-2024-06-14" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0.3 (2024-06-14)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.0.3 (2024-06-14)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#breaking-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      ⚠ BREAKING CHANGES
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#features" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#102-2024-05-24" class="md-nav__link">
     <span class="md-ellipsis">
       1.0.2 (2024-05-24)
@@ -414,7 +456,7 @@ this page.
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#bug-fixes" class="md-nav__link">
+  <a href="#bug-fixes_1" class="md-nav__link">
     <span class="md-ellipsis">
       Bug Fixes
     </span>
@@ -470,6 +512,48 @@ this page.
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#103-2024-06-14" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0.3 (2024-06-14)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.0.3 (2024-06-14)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#breaking-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      ⚠ BREAKING CHANGES
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#features" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#102-2024-05-24" class="md-nav__link">
     <span class="md-ellipsis">
       1.0.2 (2024-05-24)
@@ -489,7 +573,7 @@ this page.
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#bug-fixes" class="md-nav__link">
+  <a href="#bug-fixes_1" class="md-nav__link">
     <span class="md-ellipsis">
       Bug Fixes
     </span>
@@ -522,9 +606,30 @@ this page.
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
 <p>All notable changes to this project will be documented in this file. See <a href="https://github.com/absolute-version/commit-and-tag-version">commit-and-tag-version</a> for commit guidelines.</p>
+<h2 id="103-2024-06-14"><a href="https://github.com/jayanthkoushik/shiny-pyseed/compare/v1.0.2...v1.0.3">1.0.3</a> (2024-06-14)<a class="headerlink" href="#103-2024-06-14" title="Permanent link">&para;</a></h2>
+<h3 id="breaking-changes">⚠ BREAKING CHANGES<a class="headerlink" href="#breaking-changes" title="Permanent link">&para;</a></h3>
+<ul>
+<li>The option to install <code>typing_extensions</code> during
+bootstrap has been removed.</li>
+<li>Config option for notebooks has been removed. It is no
+longer possible to install <code>jupyter</code> during bootstrap.</li>
+</ul>
+<h3 id="features">Features<a class="headerlink" href="#features" title="Permanent link">&para;</a></h3>
+<ul>
+<li>add barebones mode for creating simple projects (<a href="https://github.com/jayanthkoushik/shiny-pyseed/commit/0b63bb1b302aeffc76c80f3cf681643f7fb2bcd3">0b63bb1</a>)</li>
+<li>incorporate notebook formatting hook to main pre-commit config (<a href="https://github.com/jayanthkoushik/shiny-pyseed/commit/6188dc6c969ee996937708959af39196e35e2412">6188dc6</a>)</li>
+<li>make pypi publishing optional in release workflow (<a href="https://github.com/jayanthkoushik/shiny-pyseed/commit/796a01e4e1f816aaf1842c1a216b6cd4bdcbfd20">796a01e</a>)</li>
+<li>remove <code>typing_extensions</code> config (<a href="https://github.com/jayanthkoushik/shiny-pyseed/commit/f94d7e20ef29311f46722bb64431fe60a94a4dc5">f94d7e2</a>)</li>
+<li>remove unnecessary <code>sh</code> plugin for prettifier (<a href="https://github.com/jayanthkoushik/shiny-pyseed/commit/2927c073d1d292b4a4380471edd9fe0b53a4c0b5">2927c07</a>)</li>
+</ul>
+<h3 id="bug-fixes">Bug Fixes<a class="headerlink" href="#bug-fixes" title="Permanent link">&para;</a></h3>
+<ul>
+<li>add code to remove trailing newlines in <code>make_docs.py</code> (<a href="https://github.com/jayanthkoushik/shiny-pyseed/commit/60f7f863a75991502c21a16d1a878fce98ad1b93">60f7f86</a>)</li>
+<li>update <code>gen_site_usage_pages.py</code> to add doc from <code>__init__.py</code> (<a href="https://github.com/jayanthkoushik/shiny-pyseed/commit/823bfe36de21351fc0a54e19fdcef40229893da3">823bfe3</a>)</li>
+</ul>
 <h2 id="102-2024-05-24"><a href="https://github.com/jayanthkoushik/shiny-pyseed/compare/v1.0.1...v1.0.2">1.0.2</a> (2024-05-24)<a class="headerlink" href="#102-2024-05-24" title="Permanent link">&para;</a></h2>
 <h2 id="101-2024-05-23"><a href="https://github.com/jayanthkoushik/shiny-pyseed/compare/v1.0.0...v1.0.1">1.0.1</a> (2024-05-23)<a class="headerlink" href="#101-2024-05-23" title="Permanent link">&para;</a></h2>
-<h3 id="bug-fixes">Bug Fixes<a class="headerlink" href="#bug-fixes" title="Permanent link">&para;</a></h3>
+<h3 id="bug-fixes_1">Bug Fixes<a class="headerlink" href="#bug-fixes_1" title="Permanent link">&para;</a></h3>
 <ul>
 <li>handle stdin not being tty in interactive mode (<a href="https://github.com/jayanthkoushik/shiny-pyseed/commit/4a494d6d4bae180ad3366b648f995ab77653601b">4a494d6</a>)</li>
 </ul>

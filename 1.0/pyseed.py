@@ -480,6 +480,7 @@ class BoolConfigKeySpec(ConfigKeySpec):
 
 
 class ConfigKey(Enum):
+    barebones = BoolConfigKeySpec("barebones", "create barebones project", False)
     project = StrConfigKeySpec("path", "project path", None, validate_string_non_empty)
     description = StrConfigKeySpec("desc", "project description", "")
     url = StrConfigKeySpec("url", "project docs site", "")
@@ -498,22 +499,25 @@ class ConfigKey(Enum):
     )
     max_py_version = StrConfigKeySpec(
         "pyM",
-        "maximum python3 version (for github actions)",
+        "maximum python3 version (for github actions; ignored in barebones mode)",
         "3.12",
         validate_string_python_version,
-    )
-    add_typing_extensions = BoolConfigKeySpec(
-        "typing_extensions", "add 'typing_extensions' as a dependency", False
-    )
-    add_jupyter_support = BoolConfigKeySpec(
-        "jupyter", "add support for jupyter notebooks", False
     )
     add_py_typed = BoolConfigKeySpec(
         "py_typed", "add 'py.typed' file indicating typing support", True
     )
     update_pc_hooks_on_schedule = BoolConfigKeySpec(
-        "pc_cron", "add support for updating pre-commit hooks monthly", True
+        "pc_cron",
+        "add support for updating pre-commit hooks monthly (ignored in barebones mode)",
+        True,
     )
+
+
+BAREBONES_MODE_IGNORED_CONFIG_KEYS = [
+    ConfigKey.url,
+    ConfigKey.max_py_version,
+    ConfigKey.update_pc_hooks_on_schedule,
+]
 
 
 ########################################################################
@@ -589,6 +593,10 @@ def get_conf_interactively(
     config: dict[ConfigKey, Any] = base_config.copy() if base_config is not None else {}
     for config_key in ConfigKey:
         if config_key not in config:
+            if config_key in BAREBONES_MODE_IGNORED_CONFIG_KEYS and config.get(
+                ConfigKey.barebones, False
+            ):
+                continue
             config_val = config_key.value.get_value_interactively()
             config[config_key] = config_val
         try:
@@ -620,10 +628,12 @@ def get_conf() -> tuple[ConfigMode, dict[ConfigKey, Any]]:
 
 
 ########################################################################
-# FUNCTION TO CREATE NEW PROJECT STRUCTURE
+# FUNCTION TO INITIALIZE PROJECT STRUCTURE
+# This function will create the project directory and write data files.
+# Template files are formatted with data from config.
 
 
-def create_project(config: dict[ConfigKey, Any]):
+def init_project(config: dict[ConfigKey, Any]):
     authors = [
         author
         for author_raw in config[ConfigKey.authors].split(",")
@@ -639,9 +649,13 @@ def create_project(config: dict[ConfigKey, Any]):
 
     min_py_minor_ver = config[ConfigKey.min_py_version].split(".")[1]
 
-    vwritetext(
-        project_path / "pyproject.toml",
-        PYPROJECT_TEMPLATE.format(
+    if config[ConfigKey.barebones]:
+        pyproject = PYPROJECT_SIMPLE_TEMPLATE.format(
+            min_python_version=config[ConfigKey.min_py_version],
+            mypy_target_version=f"py3{min_py_minor_ver}",
+        )
+    else:
+        pyproject = PYPROJECT_TEMPLATE.format(
             name_dump=project_name_dump,
             description_dump=json.dumps(config[ConfigKey.description]),
             authors_dump=json.dumps(authors),
@@ -649,20 +663,21 @@ def create_project(config: dict[ConfigKey, Any]):
             package=config[ConfigKey.main_pkg],
             min_python_version=config[ConfigKey.min_py_version],
             mypy_target_version=f"py3{min_py_minor_ver}",
-        ),
-    )
+        )
+    vwritetext(project_path / "pyproject.toml", pyproject)
 
-    vprint(f"+ WRITE {project_path / 'mkdocs.yml'}", file=sys.stderr)
-    vwritetext(
-        project_path / "mkdocs.yml",
-        MKDOCS_CONFIG_TEMPLATE.format(
-            name_dump=project_name_dump,
-            site_url=config[ConfigKey.url],
-            description_dump=json.dumps(f"Documentation for '{project_name}'."),
-            author_dump=json.dumps(comma_sep_author_names),
-            copyright_dump=json.dumps(f"Copyright (c) {comma_sep_author_names}"),
-        ),
-    )
+    if not config[ConfigKey.barebones]:
+        vprint(f"+ WRITE {project_path / 'mkdocs.yml'}", file=sys.stderr)
+        vwritetext(
+            project_path / "mkdocs.yml",
+            MKDOCS_CONFIG_TEMPLATE.format(
+                name_dump=project_name_dump,
+                site_url=config[ConfigKey.url],
+                description_dump=json.dumps(f"Documentation for '{project_name}'."),
+                author_dump=json.dumps(comma_sep_author_names),
+                copyright_dump=json.dumps(f"Copyright (c) {comma_sep_author_names}"),
+            ),
+        )
 
     license_data = (
         MIT_LICENSE_TEMPLATE.format(author=comma_sep_author_names)
@@ -675,9 +690,27 @@ def create_project(config: dict[ConfigKey, Any]):
         title=project_name, description=config[ConfigKey.description]
     ).strip()
 
-    pre_commit_config = PRE_COMMIT_CONFIG
-    if config[ConfigKey.add_jupyter_support]:
-        pre_commit_config += f"\n{PRE_COMMIT_JUPYTER_CONFIG}"
+    pre_commit_config = (
+        PRE_COMMIT_CONFIG_SIMPLE if config[ConfigKey.barebones] else PRE_COMMIT_CONFIG
+    )
+
+    if config[ConfigKey.barebones]:
+        for fpath, fdata in [
+            ("README.md", readme),
+            (".cspell.json", CSPELL_CONFIG),
+            (".editorconfig", EDITORCONFIG),
+            (".gitignore", GITIGNORE),
+            (".pre-commit-config.yaml", pre_commit_config),
+        ]:
+            vwritetext(project_path / fpath, fdata)
+
+        main_pkg_dir = project_path / config[ConfigKey.main_pkg]
+        vprint(f"+ MKDIR {main_pkg_dir}", file=sys.stderr)
+        main_pkg_dir.mkdir(parents=True)
+        vtouch(main_pkg_dir / "__init__.py")
+
+        vtouch(project_path / "project-words.txt")
+        return
 
     min_py_minor_version = int(config[ConfigKey.min_py_version].split(".")[1])
     max_py_minor_version = int(config[ConfigKey.max_py_version].split(".")[1])
@@ -751,12 +784,23 @@ def create_project(config: dict[ConfigKey, Any]):
         vprint(f"+ SYMLINK {web_src_dir / link_tgt} -> {link_src}", file=sys.stderr)
         os.symlink(Path("..") / ".." / link_src, web_src_dir / link_tgt)
 
-    for fpath in (project_path / scripts_dir).glob("*"):
-        vprint(f"+ CHMOD+x {fpath}", file=sys.stderr)
+    for script_path in (project_path / scripts_dir).glob("*"):
+        vprint(f"+ CHMOD+x {script_path}", file=sys.stderr)
         os.chmod(
             fpath,
             stat.S_IRWXU | stat.S_IRGRP | stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH,
         )
+
+
+########################################################################
+# FUNCTION TO INSTALL AND SETUP NEW PROJECT
+# This function will create a git repository, install dependencies, and
+# create an initial commit.
+
+
+def create_project(config: dict[ConfigKey, Any]):
+    project_path = Path(config[ConfigKey.project])
+    scripts_dir = Path("scripts")
 
     vprint(file=sys.stderr)
     vprint(f"+ CHDIR {project_path}", file=sys.stderr)
@@ -765,48 +809,52 @@ def create_project(config: dict[ConfigKey, Any]):
     vrun(["git", "init", "-b", "master"])
 
     vrun(["poetry", "install", "--all-extras"])
-    if config[ConfigKey.add_typing_extensions]:
-        vrun(["poetry", "add", "typing_extensions"])
-    if config[ConfigKey.add_jupyter_support]:
-        vrun(["poetry", "add", "notebook"])
-    dev_dependencies = [
-        "pre-commit",
-        "ruff",
-        "mypy",
-        "sphinx",
-        "git+https://github.com/clayrisser/sphinx-markdown-builder",
-        "mkdocstrings[python-legacy]",
-        "mkdocs-material",
-        "mkdocs-gen-files",
-        "mkdocs-literate-nav",
-        "git+https://github.com/jimporter/mike",
-    ]
+    dev_dependencies = ["pre-commit", "ruff", "mypy"]
+    if not config[ConfigKey.barebones]:
+        dev_dependencies.extend(
+            [
+                "sphinx",
+                "git+https://github.com/liran-funaro/sphinx-markdown-builder",
+                "mkdocstrings[python-legacy]",
+                "mkdocs-material",
+                "mkdocs-gen-files",
+                "mkdocs-literate-nav",
+                "git+https://github.com/jimporter/mike",
+            ]
+        )
     vrun(["poetry", "add", "--group", "dev", *dev_dependencies])
 
     vrun(["poetry", "run", "pre-commit", "install"])
     vrun(["poetry", "run", "pre-commit", "autoupdate"])
-    vrun(
-        [
-            "poetry",
-            "run",
-            "pre-commit",
-            "run",
-            "prettier",
-            "--files",
-            "pyproject.toml",
-            "mkdocs.yml",
-            "LICENSE.md",
-            "README.md",
-        ],
-        check=False,
-    )
-    vrun(["poetry", "run", "python", str(scripts_dir / "make_docs.py")])
-    vrun(["poetry", "run", "mkdocs", "build"])
+
+    if not config[ConfigKey.barebones]:
+        vrun(
+            [
+                "poetry",
+                "run",
+                "pre-commit",
+                "run",
+                "prettier",
+                "--files",
+                "pyproject.toml",
+                "mkdocs.yml",
+                "LICENSE.md",
+                "README.md",
+            ],
+            check=False,
+        )
+        vrun(["poetry", "run", "python", str(scripts_dir / "make_docs.py")])
+        vrun(["poetry", "run", "mkdocs", "build"])
 
     vrun(["git", "add", "."])
     env = os.environ.copy()
-    env["SKIP"] = "cspell,test"
-    vrun(["git", "commit", "-m", "chore: initial commit"], env=env)
+    env["SKIP"] = "cspell"
+    if not config[ConfigKey.barebones]:
+        env["SKIP"] += ",test"
+    commit_msg = (
+        "Initial commit" if config[ConfigKey.barebones] else "chore: initial commit"
+    )
+    vrun(["git", "commit", "-m", commit_msg], env=env)
 
     vprint(f"\nsuccessfully initialized project at {project_path}", file=sys.stderr)
 
@@ -944,9 +992,10 @@ def main():
     project_created = False
 
     try:
+        init_project(config)
         create_project(config)
         project_created = True
-        if config_mode == ConfigMode.non_interactive:
+        if config_mode == ConfigMode.non_interactive or config[ConfigKey.barebones]:
             return
 
         do_setup_github = get_yes_no_input(
@@ -976,27 +1025,24 @@ def main():
 
 ########################################################################
 # FILE DATA
-# The rest of this script is raw data for various files added to the
-# seeded project. They are kept within this script rather than as
-# external templates to allow seeding with just this script.
+# File data is inserted by the build script, replacing placeholders
+# of the form '!!!<DATA FILE>!!!'.
 
 
-PYPROJECT_TEMPLATE = """\
-[tool.poetry]
+PYPROJECT_TEMPLATE = r"""[tool.poetry]
 name = {name_dump}
-# version is managed by `poetry-dynamic-versioning`
-version = "0.0.0"
 description = {description_dump}
 authors = {authors_dump}
-license = "{license}"
-readme = "README.md"
-# repository = ""
+version = "0.0.0" # version is managed by `poetry-dynamic-versioning`
 packages = [{{ include = "{package}", from = "src" }}]
 include = [
   {{ path = "tests", format = "sdist" }},
   {{ path = "docs", format = "sdist" }},
   {{ path = "CHANGELOG.md", format = "sdist" }},
 ]
+# repository = ""
+license = "{license}"
+readme = "README.md"
 # keywords = [
 # ]
 # classifiers = [
@@ -1075,10 +1121,75 @@ ignore_missing_imports = true
 [build-system]
 requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning"]
 build-backend = "poetry_dynamic_versioning.backend"
+
 """
 
-MKDOCS_CONFIG_TEMPLATE = """\
-site_name: {name_dump}
+PYPROJECT_SIMPLE_TEMPLATE = r"""[tool.poetry]
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^{min_python_version}"
+
+[tool.poetry.group.dev.dependencies]
+
+[tool.ruff]
+target-version = "{mypy_target_version}"
+
+[tool.ruff.format]
+skip-magic-trailing-comma = true
+
+[tool.ruff.lint]
+select = [
+  "F",
+  "E4",
+  "E7",
+  "E9",
+  "W",
+  #"I",
+  "N",
+  "D2",
+  "D3",
+  "D4",
+  "ANN0",
+  "ANN2",
+  "ANN4",
+  "B",
+  "A",
+  "G",
+  "SIM",
+  #"TCH",
+  "PLC",
+  "PLE",
+  "PLW",
+  "RUF",
+]
+ignore-init-module-imports = true
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401", "F403", "F405"]
+
+[tool.ruff.lint.flake8-annotations]
+allow-star-arg-any = true
+ignore-fully-untyped = true
+suppress-dummy-args = true
+suppress-none-returning = true
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+split-on-trailing-comma = false
+
+[tool.ruff.lint.pycodestyle]
+max-doc-length = 72
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.mypy]
+ignore_missing_imports = true
+
+"""
+
+MKDOCS_CONFIG_TEMPLATE = r"""site_name: {name_dump}
 site_url: "{site_url}"
 # repo_url: ""
 site_description: {description_dump}
@@ -1151,10 +1262,10 @@ theme:
       toggle:
         icon: material/weather-night
         name: Switch to light mode
+
 """
 
-MIT_LICENSE_TEMPLATE = """\
-# MIT License
+MIT_LICENSE_TEMPLATE = r"""# MIT License
 
 Copyright (c) {author}
 
@@ -1175,16 +1286,16 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
 """
 
-README_TEMPLATE = """\
-# {title}
+README_TEMPLATE = r"""# {title}
 
 {description}
+
 """
 
-COMMITLINT_RC = """\
-extends: ["@commitlint/config-conventional"]
+COMMITLINT_RC = r"""extends: ["@commitlint/config-conventional"]
 
 rules:
   # Rule values are of the form [<level>, <always/never>, [<value>]].
@@ -1195,10 +1306,10 @@ rules:
 
   body-leading-blank: [2, always]
   footer-leading-blank: [2, always]
+
 """
 
-CSPELL_CONFIG = """\
-{
+CSPELL_CONFIG = r"""{
   "$schema": "https://raw.githubusercontent.com/streetsidesoftware/cspell/main/cspell.schema.json",
   "version": "0.2",
   "language": "en-US",
@@ -1213,10 +1324,10 @@ CSPELL_CONFIG = """\
     }
   ]
 }
+
 """
 
-EDITORCONFIG = """\
-root = true
+EDITORCONFIG = r"""root = true
 
 [*]
 charset = utf-8
@@ -1230,10 +1341,10 @@ indent_size = 4
 
 [*.{yml,yaml,toml,md,json,html}]
 indent_size = 2
+
 """
 
-GITATTRIBUTES = """\
-.git*                       export-ignore
+GITATTRIBUTES = r""".git*                       export-ignore
 .commitlintrc.yaml          export-ignore
 .editorconfig               export-ignore
 .pre-commit-config.yaml     export-ignore
@@ -1241,21 +1352,20 @@ GITATTRIBUTES = """\
 .prettierrc.js              export-ignore
 .cspell.json                export-ignore
 project-words.txt           export-ignore
+
 """
 
-GITIGNORE = """\
-dist/
+GITIGNORE = r"""dist/
 docs/_build/
 www/_site/
 .mypy_cache/
 .ruff_cache/
-.prettier_cache/
 __pycache__/
 .ipynb_checkpoints/
+
 """
 
-PRE_COMMIT_CONFIG = r"""
-default_install_hook_types: [pre-commit, commit-msg]
+PRE_COMMIT_CONFIG = r"""default_install_hook_types: [pre-commit, commit-msg]
 default_stages: [pre-commit]
 
 repos:
@@ -1300,10 +1410,9 @@ repos:
     hooks:
       - id: prettier
         name: "Prettify non-code files"
-        entry: prettier --write --ignore-unknown --cache-location .prettier_cache/cache.json
+        entry: prettier --write --ignore-unknown
         additional_dependencies:
           - prettier
-          - prettier-plugin-sh
           - prettier-plugin-toml
 
   - repo: local
@@ -1338,37 +1447,74 @@ repos:
         language: system
         files: "src/.*\\.py|docs/make\\.sh"
         pass_filenames: false
-""".lstrip()
-
-PRE_COMMIT_JUPYTER_CONFIG = """\
       - id: nbstrip
         name: Remove metadata from notebooks
         entry: poetry run jupyter nbconvert --inplace --ClearMetadataPreprocessor.enabled=True
         language: system
         types: [jupyter]
+
 """
 
-PRETTIER_IGNORE = """\
-.gitattributes
+PRE_COMMIT_CONFIG_SIMPLE = r"""repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: check-case-conflict
+      - id: check-symlinks
+      - id: destroyed-symlinks
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+      - id: trailing-whitespace
+      - id: check-merge-conflict
+      - id: check-vcs-permalinks
+      - id: detect-private-key
+
+  - repo: https://github.com/streetsidesoftware/cspell-cli
+    rev: v8.6.0
+    hooks:
+      - id: cspell
+        name: Spell check docs
+        files: "docs/.*\\.md|README.md"
+
+  - repo: local
+    hooks:
+      - id: format
+        name: Format Python files
+        language: system
+        entry: poetry run ruff format
+        types: [python]
+      - id: lint
+        name: Lint Python files
+        language: system
+        entry: poetry run ruff check
+        types: [python]
+        pass_filenames: false
+      - id: mypy
+        name: Type check Python files
+        entry: poetry run mypy .
+        language: system
+        types: [python]
+        pass_filenames: false
+
+"""
+
+PRETTIER_IGNORE = r""".gitattributes
 docs/*.md
 CHANGELOG.md
 poetry.lock
+
 """
 
-PRETTIER_RC = """\
-// https://github.com/prettier/prettier/issues/15388#issuecomment-1717746872
+PRETTIER_RC = r"""// https://github.com/prettier/prettier/issues/15388#issuecomment-1717746872
 const config = {
-  plugins: [
-    require.resolve("prettier-plugin-sh"),
-    require.resolve("prettier-plugin-toml"),
-  ],
+  plugins: [require.resolve("prettier-plugin-toml")],
 };
 
 module.exports = config;
+
 """
 
-CHECK_PR_WORKFLOW = """\
-name: Check pull request
+CHECK_PR_WORKFLOW = r"""name: Check pull request
 
 on: pull_request
 
@@ -1393,10 +1539,10 @@ jobs:
     uses: ./.github/workflows/run-tests.yml
     with:
       fail-fast: false
+
 """
 
-RELEASE_NEW_VERSION_WORKFLOW = """\
-name: Create and publish a new release
+RELEASE_NEW_VERSION_WORKFLOW = r"""name: Create and publish a new release
 
 on:
   workflow_dispatch:
@@ -1434,6 +1580,13 @@ on:
         type: string
         required: false
         default: ""
+      publish-to-pypi:
+        description: >
+          Publish the project to PyPI. Requires a repository secret named
+          'PYPI_TOKEN' with a suitable API key.
+        type: boolean
+        required: false
+        default: true
 
 concurrency:
   group: ${{ github.workflow }}
@@ -1468,7 +1621,7 @@ jobs:
       - name: Configure git
         run: |
           git config --global user.name "${{ github.actor }}"
-          git config --global user.email \\
+          git config --global user.email \
             "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
 
       - name: Bump version and create changelog
@@ -1487,6 +1640,7 @@ jobs:
 
       - run: poetry build
       - run: poetry publish -u __token__ -p $PYPI_TOKEN
+        if: ${{ inputs.publish-to-pypi }}
         env:
           PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
 
@@ -1496,18 +1650,18 @@ jobs:
       - name: Extract major and minor versions of latest release
         id: version
         run: |
-          echo "version=$( echo ${{ steps.tag.outputs.tag }} \\
-            | sed -E 's/^v([0-9]+)\\.([0-9]+)\\..*$/\\1.\\2/' )" >> $GITHUB_OUTPUT
+          echo "version=$( echo ${{ steps.tag.outputs.tag }} \
+            | sed -E 's/^v([0-9]+)\.([0-9]+)\..*$/\1.\2/' )" >> $GITHUB_OUTPUT
       - name: Publish site for new release
         if: ${{ ! inputs.pre-release }}
         run: |
           poetry run mike set-default --allow-undefined latest
-          poetry run mike deploy --update-aliases --push --allow-empty \\
+          poetry run mike deploy --update-aliases --push --allow-empty \
             ${{ steps.version.outputs.version }} latest
+
 """
 
-RUN_TESTS_WORKFLOW_TEMPLATE = """\
-name: Run unit tests
+RUN_TESTS_WORKFLOW_TEMPLATE = r"""name: Run unit tests
 
 on:
   workflow_call:
@@ -1534,10 +1688,10 @@ jobs:
       - run: poetry lock
       - run: poetry install --only main --all-extras
       - run: poetry run python -m unittest -v
+
 """
 
-UPDATE_PRE_COMMIT_HOOKS_WORKFLOW_TEMPLATE = """\
-name: Update pre-commit hooks
+UPDATE_PRE_COMMIT_HOOKS_WORKFLOW_TEMPLATE = r"""name: Update pre-commit hooks
 
 on:
   workflow_dispatch:
@@ -1560,10 +1714,10 @@ jobs:
           branch: update-pre-commit-hooks
           title: Update pre-commit hooks
           labels: automated,chore
+
 """
 
-COMMIT_AND_TAG_VERSION_SCRIPT = """\
-#!/usr/bin/env python3
+COMMIT_AND_TAG_VERSION_SCRIPT = r"""#!/usr/bin/env python3
 
 import subprocess
 import sys
@@ -1599,10 +1753,10 @@ if args.dry_run:
 cmd = ["npx", "commit-and-tag-version", *cmd_args]
 print(f"+ {' '.join(cmd)}", file=sys.stderr)
 subprocess.run(cmd, check=True)
+
 """
 
-GEN_SITE_USAGE_PAGES_SCRIPT = """\
-#!/usr/bin/env python3
+GEN_SITE_USAGE_PAGES_SCRIPT = r"""#!/usr/bin/env python3
 
 from importlib import import_module
 from pathlib import Path
@@ -1632,7 +1786,9 @@ for py_path in sorted(PYSRC_PATH.rglob("*.py")):
         mod = import_module(mod_name)
 
         with mkdocs_gen_files.open(doc_path, "w") as f:
-            print(f"# {mod_name}\\n", file=f)
+            print(f"# {mod_name}\n", file=f)
+            if mod.__doc__:
+                print(mod.__doc__, end="\n\n", file=f)
             for obj_name in getattr(mod, "__all__", []):
                 print(f"::: {mod_name}.{obj_name}", file=f)
                 print("    options:", file=f)
@@ -1651,10 +1807,10 @@ for py_path in sorted(PYSRC_PATH.rglob("*.py")):
 
 with mkdocs_gen_files.open(f"{USAGE_REL_DIR}/SUMMARY.md", "w") as nav_file:
     nav_file.writelines(nav.build_literate_nav())
+
 """
 
-MAKE_DOCS_SCRIPT = """\
-#!/usr/bin/env python3
+MAKE_DOCS_SCRIPT = r"""#!/usr/bin/env python3
 
 import re
 import shlex
@@ -1703,18 +1859,20 @@ build_cmd = [
 print(f"+ {shlex.join(build_cmd)}", file=sys.stderr)
 subprocess.run(build_cmd, check=True, text=True)
 
+# Remove tralining spaces and newlines from the generated files.
 for fname in docs_dir.glob("**/*.md"):
     with open(fname, "r") as f:
         fdata = f.read()
 
-    fdata_fixed = re.sub(r" *(?=\\n|$)", "", fdata)
+    fdata_fixed = re.sub(r" *(?=$)", "", fdata, flags=re.MULTILINE)
+    fdata_fixed = re.sub("\n+(?=$)", "", fdata_fixed)
     if fdata_fixed != fdata:
         with open(fname, "w") as f:
             print(fdata_fixed, file=f)
+
 """
 
-VERIFY_PR_COMMITS_SCRIPT = """\
-#!/usr/bin/env python3
+VERIFY_PR_COMMITS_SCRIPT = r"""#!/usr/bin/env python3
 
 import json
 import os
@@ -1736,7 +1894,7 @@ except subprocess.CalledProcessError as e:
 gh_output_json = json.loads(gh_proc.stdout)
 commits = gh_output_json["commits"]
 commit_msgs = [
-    f"{commit['messageHeadline']}\\n\\n{commit['messageBody']}".strip()
+    f"{commit['messageHeadline']}\n\n{commit['messageBody']}".strip()
     for commit in commits
 ]
 
@@ -1753,7 +1911,7 @@ ret_code = 0
 for commit_msg in commit_msgs:
     with NamedTemporaryFile(mode="w") as f:
         os.environ["COMMIT_MSG_FILE"] = f.name
-        print(f"{commit_msg}\\n", file=sys.stderr)
+        print(f"{commit_msg}\n", file=sys.stderr)
         print(commit_msg, file=f)
         pre_commit_proc = subprocess.run(pre_commit_cmd, check=False, text=True)
         if pre_commit_proc.returncode != 0:
@@ -1761,23 +1919,22 @@ for commit_msg in commit_msgs:
         print("-" * 80, file=sys.stderr)
 
 sys.exit(ret_code)
+
 """
 
-INIT_PY = """\
-from ._version import __version__
+INIT_PY = r"""from ._version import __version__
 """
 
-VERSION_PY = """\
-__version__ = "0.0.0"  # managed by `poetry-dynamic-versioning`
+VERSION_PY = r"""__version__ = "0.0.0"  # managed by `poetry-dynamic-versioning`
 """
 
-THEME_OVERRIDE_MAIN = """\
-{% extends "base.html" %} {% block outdated %} You are viewing an old version of
+THEME_OVERRIDE_MAIN = r"""{% extends "base.html" %} {% block outdated %} You are viewing an old version of
 this page.
 <a href="{{ '../' ~ base_url }}">
   <strong>Click here to go to latest version.</strong>
 </a>
 {% endblock %}
+
 """
 
 
