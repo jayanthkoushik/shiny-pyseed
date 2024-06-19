@@ -165,6 +165,10 @@ specifying them are:
     periodic GitHub action that will run `pre-commit autoupdate` and
     create a pull request with the changes. It is ignored in barebones
     mode.
+12. `--add-deps`: Additional Python dependencies to add to the project.
+    Dependencies should be separated by ';', and follow [poetry specifications](https://python-poetry.org/docs/dependency-specification/).
+13. `--add-dev-deps`: Same as `--add-deps`, except the dependencies are
+    added to the 'dev' group.
 
 <!--------------------------------------------------------------------->
 

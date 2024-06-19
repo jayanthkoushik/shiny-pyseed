@@ -511,6 +511,16 @@ class ConfigKey(Enum):
         "add support for updating pre-commit hooks monthly (ignored in barebones mode)",
         True,
     )
+    add_deps = StrConfigKeySpec(
+        "add_deps",
+        "additional python dependencies to install (semicolon separated)",
+        "",
+    )
+    add_dev_deps = StrConfigKeySpec(
+        "add_dev_deps",
+        "additional python dev dependencies to install (semicolon separated)",
+        "",
+    )
 
 
 BAREBONES_MODE_IGNORED_CONFIG_KEYS = [
@@ -822,7 +832,22 @@ def create_project(config: dict[ConfigKey, Any]):
                 "git+https://github.com/jimporter/mike",
             ]
         )
+    add_dev_deps = [
+        dep
+        for dep_raw in config[ConfigKey.add_dev_deps].split(";")
+        if (dep := dep_raw.strip())
+    ]
+    if add_dev_deps:
+        dev_dependencies.extend(add_dev_deps)
     vrun(["poetry", "add", "--group", "dev", *dev_dependencies])
+
+    add_deps = [
+        dep
+        for dep_raw in config[ConfigKey.add_deps].split(";")
+        if (dep := dep_raw.strip())
+    ]
+    if add_deps:
+        vrun(["poetry", "add", *add_deps])
 
     vrun(["poetry", "run", "pre-commit", "install"])
     vrun(["poetry", "run", "pre-commit", "autoupdate"])

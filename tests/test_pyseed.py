@@ -726,6 +726,8 @@ class _BaseTestCreateProject(TestCase):
             pyseed.ConfigKey.max_py_version: "3.12",
             pyseed.ConfigKey.add_py_typed: True,
             pyseed.ConfigKey.update_pc_hooks_on_schedule: False,
+            pyseed.ConfigKey.add_deps: "",
+            pyseed.ConfigKey.add_dev_deps: "",
         }
 
     def tearDown(self):
@@ -991,12 +993,23 @@ class TestInitProject(_BaseTestCreateProject):
 )
 class TestCreateProject(_BaseTestCreateProject):
     def test_create_project_runs_without_error(self):
+        self.config[pyseed.ConfigKey.add_deps] = "requests;flask>=2.0,<3.0"
+        self.config[pyseed.ConfigKey.add_dev_deps] = "black"
         pyseed.init_project(self.config)
         pyseed.create_project(self.config)
         pdone = pyseed.vrun(
             ["git", "log", "--max-count=1", "--pretty=format:%s"], capture_output=True
         )
         self.assertEqual(pdone.stdout.strip(), "chore: initial commit")
+        pdone = pyseed.vrun(
+            ["poetry", "run", "pip", "list", "--format", "freeze"], capture_output=True
+        )
+        installed_pkgs = {
+            line.split("==")[0].lower() for line in pdone.stdout.splitlines()
+        }
+        for pkg in ["requests", "flask", "black"]:
+            with self.subTest(pkg):
+                self.assertIn(pkg, installed_pkgs)
 
     def test_create_project_runs_without_error_in_barebones_mode(self):
         self.config[pyseed.ConfigKey.barebones] = True
