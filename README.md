@@ -87,6 +87,13 @@ creation) is skipped in non-interactive mode.**
    specification, and maintain a linear commit history.
 4. [Trigger](https://docs.github.com/en/actions/using-workflows/manually-running-a-workflow)
    the `release-new-version` workflow to create a new release.
+5. If working on a new clone of the repository, initialize the project
+   environment by running:
+
+   ```sh
+   poetry install --all-extras
+   poetry run pre-commit install
+   ```
 
 <!--------------------------------------------------------------------->
 
