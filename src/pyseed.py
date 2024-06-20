@@ -795,7 +795,7 @@ def init_project(config: dict[ConfigKey, Any]):
     for script_path in (project_path / scripts_dir).glob("*"):
         vprint(f"+ CHMOD+x {script_path}", file=sys.stderr)
         os.chmod(
-            fpath,
+            script_path,
             stat.S_IRWXU | stat.S_IRGRP | stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH,
         )
 

@@ -782,6 +782,10 @@ class TestInitProject(_BaseTestCreateProject):
         self.assertEqual(
             (www_src_dir / "index.md").resolve(), (project_dir / "README.md").resolve()
         )
+        scripts_dir = project_dir / "scripts"
+        for fpath in scripts_dir.glob("*"):
+            with self.subTest(fpath):
+                self.assertTrue(os.access(fpath, os.X_OK))
 
     def test_init_project_writes_all_expected_files_in_barebones_mode(self):
         self.config[pyseed.ConfigKey.barebones] = True
