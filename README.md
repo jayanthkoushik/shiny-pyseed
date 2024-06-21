@@ -131,9 +131,8 @@ modes:
 The available configurations, and the command line arguments for
 specifying them are:
 
-1. `--barebones/--no-barebones`: Whether to enable barebones mode. If
-   enabled, some of the other arguments will be ignored, and a barebones
-   project will be created. False by default.
+1. `--barebones`: Enable barebones mode. If enabled, some of the other
+   arguments will be ignored, and a barebones project will be created.
 2. `--project <PATH>`: Path where the new project is created. This is
    the only required configuration.
 3. `--description <DESCRIPTION>`: Project description.
@@ -144,8 +143,7 @@ specifying them are:
    component of the project path will be used; for example if the
    project path is `foo/bar/spam-ham`, then the default main package
    name will be `spam_ham`.
-6. `--mit`/`--no-mit`: Whether to add the MIT license to the project.
-   True by default.
+6. `--no-mit`: Do not include the MIT license.
 7. `--authors <AUTHORS>`: Project authors. The project authors must be
    specified as a comma separated list of names and emails in the form
    `name <email>`. For example `Author One <aone@example.org>, Author
@@ -157,14 +155,13 @@ specifying them are:
 9. `--pyM <3.MINOR.PATCH>`: Maximum Python version. This only affects
    the versions used for running tests with GitHub actions. It has no
    effect in barebones mode since GitHub workflows are not included.
-10. `--py-typed`/`--no-py-typed`: Whether to add a `py.typed` file to
-    the Python package, indicating that the package provides type hints.
-    True by default.
-11. `--pc-cron`/`--no-pc-cron`: Whether to add support for updating
-    pre-commit hooks monthly through GitHub actions. This will create a
-    periodic GitHub action that will run `pre-commit autoupdate` and
-    create a pull request with the changes. It is ignored in barebones
-    mode.
+10. `--no-py-typed`: Do not add a `py.typed` file to the Python package.
+    This file indicates that a package provides type hints.
+11. `--no-pc-cron`: Do not add support for updating pre-commit hooks
+    monthly through GitHub actions. Without this option, the script
+    creates a periodic GitHub action that will run `pre-commit
+    autoupdate` and create a pull request with the changes. It is
+    ignored in barebones mode.
 12. `--add-deps`: Additional Python dependencies to add to the project.
     Dependencies should be separated by ';', and follow [poetry specifications](https://python-poetry.org/docs/dependency-specification/).
 13. `--add-dev-deps`: Same as `--add-deps`, except the dependencies are
