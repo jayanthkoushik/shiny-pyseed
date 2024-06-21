@@ -521,12 +521,18 @@ class ConfigKey(Enum):
         "additional python dev dependencies to install (semicolon separated)",
         "",
     )
+    no_github = BoolConfigKeySpec(
+        "no_github",
+        "disable github support by not including any github related files",
+        False,
+    )
 
 
 BAREBONES_MODE_IGNORED_CONFIG_KEYS = [
     ConfigKey.url,
     ConfigKey.max_py_version,
     ConfigKey.update_pc_hooks_on_schedule,
+    ConfigKey.no_github,
 ]
 
 
@@ -722,30 +728,43 @@ def init_project(config: dict[ConfigKey, Any]):
         vtouch(project_path / "project-words.txt")
         return
 
-    min_py_minor_version = int(config[ConfigKey.min_py_version].split(".")[1])
-    max_py_minor_version = int(config[ConfigKey.max_py_version].split(".")[1])
-    py_minor_versions = range(min_py_minor_version, max_py_minor_version + 1)
-    py_version_strs = [f'"3.{minor_version}"' for minor_version in py_minor_versions]
-    run_tests_workflow = RUN_TESTS_WORKFLOW_TEMPLATE.format(
-        python_versions=", ".join(py_version_strs)
-    )
-
-    update_pc_hooks_workflow = UPDATE_PRE_COMMIT_HOOKS_WORKFLOW_TEMPLATE.format(
-        schedule=(
-            '  schedule:\n    - cron: "0 0 1 * *"\n'
-            if config[ConfigKey.update_pc_hooks_on_schedule]
-            else ""
+    if not config[ConfigKey.no_github]:
+        min_py_minor_version = int(config[ConfigKey.min_py_version].split(".")[1])
+        max_py_minor_version = int(config[ConfigKey.max_py_version].split(".")[1])
+        py_minor_versions = range(min_py_minor_version, max_py_minor_version + 1)
+        py_version_strs = [
+            f'"3.{minor_version}"' for minor_version in py_minor_versions
+        ]
+        run_tests_workflow = RUN_TESTS_WORKFLOW_TEMPLATE.format(
+            python_versions=", ".join(py_version_strs)
         )
-    )
 
-    gh_workflows_dir = Path(".github") / "workflows"
+        update_pc_hooks_workflow = UPDATE_PRE_COMMIT_HOOKS_WORKFLOW_TEMPLATE.format(
+            schedule=(
+                '  schedule:\n    - cron: "0 0 1 * *"\n'
+                if config[ConfigKey.update_pc_hooks_on_schedule]
+                else ""
+            )
+        )
+
+        gh_workflows_dir = project_path / ".github" / "workflows"
+        vprint(f"+ MKDIR {gh_workflows_dir}", file=sys.stderr)
+        gh_workflows_dir.mkdir(parents=True)
+
+        for fname, fdata in [
+            ("check-pr.yml", CHECK_PR_WORKFLOW),
+            ("release-new-version.yml", RELEASE_NEW_VERSION_WORKFLOW),
+            ("run-tests.yml", run_tests_workflow),
+            ("update-pre-commit-hooks.yml", update_pc_hooks_workflow),
+        ]:
+            vwritetext(gh_workflows_dir / fname, fdata)
+
     scripts_dir = Path("scripts")
     main_pkg_dir = Path("src") / config[ConfigKey.main_pkg]
     tests_dir = Path("tests")
     www_dir = Path("www")
 
     for directory in [
-        gh_workflows_dir,
         scripts_dir,
         main_pkg_dir,
         tests_dir,
@@ -754,6 +773,25 @@ def init_project(config: dict[ConfigKey, Any]):
     ]:
         vprint(f"+ MKDIR {project_path / directory}", file=sys.stderr)
         (project_path / directory).mkdir(parents=True)
+
+    script_files_data = [
+        (scripts_dir / "gen_site_usage_pages.py", GEN_SITE_USAGE_PAGES_SCRIPT),
+        (scripts_dir / "make_docs.py", MAKE_DOCS_SCRIPT),
+    ]
+    if config[ConfigKey.no_github]:
+        script_files_data.append(
+            (scripts_dir / "release_new_version.py", RELEASE_NEW_VERSION_SCRIPT)
+        )
+    else:
+        script_files_data.extend(
+            [
+                (
+                    scripts_dir / "commit_and_tag_version.py",
+                    COMMIT_AND_TAG_VERSION_SCRIPT,
+                ),
+                (scripts_dir / "verify_pr_commits.py", VERIFY_PR_COMMITS_SCRIPT),
+            ]
+        )
 
     for fpath, fdata in [
         ("README.md", readme),
@@ -765,14 +803,7 @@ def init_project(config: dict[ConfigKey, Any]):
         (".pre-commit-config.yaml", pre_commit_config),
         (".prettierignore", PRETTIER_IGNORE),
         (".prettierrc.js", PRETTIER_RC),
-        (gh_workflows_dir / "check-pr.yml", CHECK_PR_WORKFLOW),
-        (gh_workflows_dir / "release-new-version.yml", RELEASE_NEW_VERSION_WORKFLOW),
-        (gh_workflows_dir / "run-tests.yml", run_tests_workflow),
-        (gh_workflows_dir / "update-pre-commit-hooks.yml", update_pc_hooks_workflow),
-        (scripts_dir / "commit_and_tag_version.py", COMMIT_AND_TAG_VERSION_SCRIPT),
-        (scripts_dir / "gen_site_usage_pages.py", GEN_SITE_USAGE_PAGES_SCRIPT),
-        (scripts_dir / "make_docs.py", MAKE_DOCS_SCRIPT),
-        (scripts_dir / "verify_pr_commits.py", VERIFY_PR_COMMITS_SCRIPT),
+        *script_files_data,
         (main_pkg_dir / "__init__.py", INIT_PY),
         (main_pkg_dir / "_version.py", VERSION_PY),
         (www_dir / "theme" / "overrides" / "main.html", THEME_OVERRIDE_MAIN),
@@ -1020,7 +1051,11 @@ def main():
         init_project(config)
         create_project(config)
         project_created = True
-        if config_mode == ConfigMode.non_interactive or config[ConfigKey.barebones]:
+        if (
+            config_mode == ConfigMode.non_interactive
+            or config[ConfigKey.barebones]
+            or config[ConfigKey.no_github]
+        ):
             return
 
         do_setup_github = get_yes_no_input(
@@ -1944,6 +1979,128 @@ for commit_msg in commit_msgs:
         print("-" * 80, file=sys.stderr)
 
 sys.exit(ret_code)
+
+"""
+
+RELEASE_NEW_VERSION_SCRIPT = r"""#!/usr/bin/env python3
+
+import os
+import subprocess
+import sys
+from argparse import ArgumentParser, BooleanOptionalAction, RawTextHelpFormatter
+from getpass import getpass
+
+
+#######################################################################
+# ARGUMENT PARSING
+
+arg_parser = ArgumentParser(formatter_class=RawTextHelpFormatter)
+arg_parser.add_argument(
+    "-f",
+    "--first-release",
+    action="store_true",
+    help="Create the first release. If version is not specified,\n"
+    "it will be set to '1.0.0'. No changelog will be generated.",
+)
+arg_parser.add_argument(
+    "-r",
+    "--release-version",
+    type=str,
+    metavar="VERSION",
+    help="Release as the provided version. Should be a valid semvar\n"
+    "version, or one of 'major', 'minor', or 'patch'. If not\n"
+    "provided, version is determined automatically from commits\n"
+    "since the previous release.",
+)
+arg_parser.add_argument(
+    "-p",
+    "--pre-release",
+    action="store_true",
+    help="Make a pre-release. If a custom version is specified, or a first\n"
+    "release is being made, a pre-release tag must also be provided,\n"
+    "or the custom version should be of the form\n"
+    "'<major>.<minor>.<patch>-<pre-release-tag>'.",
+)
+arg_parser.add_argument(
+    "-t",
+    "--pre-release-tag",
+    type=str,
+    metavar="TAG",
+    help="Use provided tag for pre-release. This only has effect\n"
+    "if making a pre-release, and will create release with version\n"
+    "'<major>.<minor>.<patch>-<pre-release-tag>-<pre-release-version>'.",
+)
+arg_parser.add_argument(
+    "--git-push",
+    action=BooleanOptionalAction,
+    help="Whether to run `git push` after creating release commit.\n"
+    "True by default.",
+    default=True,
+)
+arg_parser.add_argument(
+    "--pypi-publish",
+    action=BooleanOptionalAction,
+    help="Whether to publish the project to PyPI. Requires an access token.\n"
+    "The token can be provided with an environment variable named PYPI_TOKEN.\n"
+    "If this is not available, the user is prompted for it. True by default.",
+    default=True,
+)
+arg_parser.add_argument(
+    "--dry-run", action="store_true", help="Only show what commands will be executed."
+)
+args = arg_parser.parse_args()
+
+
+#######################################################################
+# CALL npx commit-and-tag-version
+
+commit_and_tag_cmd = ["npx", "commit-and-tag-version"]
+
+if args.first_release:
+    commit_and_tag_cmd.append("--skip.changelog")
+    commit_and_tag_cmd.append("--skip.commit")
+
+if args.release_version:
+    commit_and_tag_cmd.extend(["-r", args.release_version])
+elif args.first_release:
+    commit_and_tag_cmd.extend(["-r", "1.0.0"])
+
+if args.pre_release:
+    commit_and_tag_cmd.append("-p")
+    if args.pre_release_tag:
+        commit_and_tag_cmd.append(args.pre_release_tag)
+
+if args.dry_run:
+    commit_and_tag_cmd.append("--dry-run")
+
+print(f"+ {' '.join(commit_and_tag_cmd)}", file=sys.stderr)
+subprocess.run(commit_and_tag_cmd, check=True)
+
+
+#######################################################################
+# CALL git push
+
+if args.git_push:
+    push_cmd = ["git", "push", "--follow-tags", "origin", "master"]
+    print(f"+ {' '.join(push_cmd)}", file=sys.stderr)
+    if not args.dry_run:
+        subprocess.run(push_cmd, check=True)
+
+
+#######################################################################
+# CALL poetry publish
+
+if args.pypi_publish:
+    pypi_publish_cmd = ["poetry", "publish", "-u", "__token__", "-p", "PYPI_TOKEN"]
+    print(f"+ {' '.join(pypi_publish_cmd)}", file=sys.stderr)
+    if not args.dry_run:
+        if "PYPI_TOKEN" in os.environ:
+            pypi_token = os.environ["PYPI_TOKEN"]
+        else:
+            pypi_token = getpass("PyPI access token: ")
+        pypi_publish_cmd[-1] = pypi_token
+
+        subprocess.run(pypi_publish_cmd, check=True)
 
 """
 

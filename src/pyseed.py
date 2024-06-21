@@ -519,12 +519,18 @@ class ConfigKey(Enum):
         "additional python dev dependencies to install (semicolon separated)",
         "",
     )
+    no_github = BoolConfigKeySpec(
+        "no_github",
+        "disable github support by not including any github related files",
+        False,
+    )
 
 
 BAREBONES_MODE_IGNORED_CONFIG_KEYS = [
     ConfigKey.url,
     ConfigKey.max_py_version,
     ConfigKey.update_pc_hooks_on_schedule,
+    ConfigKey.no_github,
 ]
 
 
@@ -720,30 +726,43 @@ def init_project(config: dict[ConfigKey, Any]):
         vtouch(project_path / "project-words.txt")
         return
 
-    min_py_minor_version = int(config[ConfigKey.min_py_version].split(".")[1])
-    max_py_minor_version = int(config[ConfigKey.max_py_version].split(".")[1])
-    py_minor_versions = range(min_py_minor_version, max_py_minor_version + 1)
-    py_version_strs = [f'"3.{minor_version}"' for minor_version in py_minor_versions]
-    run_tests_workflow = RUN_TESTS_WORKFLOW_TEMPLATE.format(
-        python_versions=", ".join(py_version_strs)
-    )
-
-    update_pc_hooks_workflow = UPDATE_PRE_COMMIT_HOOKS_WORKFLOW_TEMPLATE.format(
-        schedule=(
-            '  schedule:\n    - cron: "0 0 1 * *"\n'
-            if config[ConfigKey.update_pc_hooks_on_schedule]
-            else ""
+    if not config[ConfigKey.no_github]:
+        min_py_minor_version = int(config[ConfigKey.min_py_version].split(".")[1])
+        max_py_minor_version = int(config[ConfigKey.max_py_version].split(".")[1])
+        py_minor_versions = range(min_py_minor_version, max_py_minor_version + 1)
+        py_version_strs = [
+            f'"3.{minor_version}"' for minor_version in py_minor_versions
+        ]
+        run_tests_workflow = RUN_TESTS_WORKFLOW_TEMPLATE.format(
+            python_versions=", ".join(py_version_strs)
         )
-    )
 
-    gh_workflows_dir = Path(".github") / "workflows"
+        update_pc_hooks_workflow = UPDATE_PRE_COMMIT_HOOKS_WORKFLOW_TEMPLATE.format(
+            schedule=(
+                '  schedule:\n    - cron: "0 0 1 * *"\n'
+                if config[ConfigKey.update_pc_hooks_on_schedule]
+                else ""
+            )
+        )
+
+        gh_workflows_dir = project_path / ".github" / "workflows"
+        vprint(f"+ MKDIR {gh_workflows_dir}", file=sys.stderr)
+        gh_workflows_dir.mkdir(parents=True)
+
+        for fname, fdata in [
+            ("check-pr.yml", CHECK_PR_WORKFLOW),
+            ("release-new-version.yml", RELEASE_NEW_VERSION_WORKFLOW),
+            ("run-tests.yml", run_tests_workflow),
+            ("update-pre-commit-hooks.yml", update_pc_hooks_workflow),
+        ]:
+            vwritetext(gh_workflows_dir / fname, fdata)
+
     scripts_dir = Path("scripts")
     main_pkg_dir = Path("src") / config[ConfigKey.main_pkg]
     tests_dir = Path("tests")
     www_dir = Path("www")
 
     for directory in [
-        gh_workflows_dir,
         scripts_dir,
         main_pkg_dir,
         tests_dir,
@@ -752,6 +771,25 @@ def init_project(config: dict[ConfigKey, Any]):
     ]:
         vprint(f"+ MKDIR {project_path / directory}", file=sys.stderr)
         (project_path / directory).mkdir(parents=True)
+
+    script_files_data = [
+        (scripts_dir / "gen_site_usage_pages.py", GEN_SITE_USAGE_PAGES_SCRIPT),
+        (scripts_dir / "make_docs.py", MAKE_DOCS_SCRIPT),
+    ]
+    if config[ConfigKey.no_github]:
+        script_files_data.append(
+            (scripts_dir / "release_new_version.py", RELEASE_NEW_VERSION_SCRIPT)
+        )
+    else:
+        script_files_data.extend(
+            [
+                (
+                    scripts_dir / "commit_and_tag_version.py",
+                    COMMIT_AND_TAG_VERSION_SCRIPT,
+                ),
+                (scripts_dir / "verify_pr_commits.py", VERIFY_PR_COMMITS_SCRIPT),
+            ]
+        )
 
     for fpath, fdata in [
         ("README.md", readme),
@@ -763,14 +801,7 @@ def init_project(config: dict[ConfigKey, Any]):
         (".pre-commit-config.yaml", pre_commit_config),
         (".prettierignore", PRETTIER_IGNORE),
         (".prettierrc.js", PRETTIER_RC),
-        (gh_workflows_dir / "check-pr.yml", CHECK_PR_WORKFLOW),
-        (gh_workflows_dir / "release-new-version.yml", RELEASE_NEW_VERSION_WORKFLOW),
-        (gh_workflows_dir / "run-tests.yml", run_tests_workflow),
-        (gh_workflows_dir / "update-pre-commit-hooks.yml", update_pc_hooks_workflow),
-        (scripts_dir / "commit_and_tag_version.py", COMMIT_AND_TAG_VERSION_SCRIPT),
-        (scripts_dir / "gen_site_usage_pages.py", GEN_SITE_USAGE_PAGES_SCRIPT),
-        (scripts_dir / "make_docs.py", MAKE_DOCS_SCRIPT),
-        (scripts_dir / "verify_pr_commits.py", VERIFY_PR_COMMITS_SCRIPT),
+        *script_files_data,
         (main_pkg_dir / "__init__.py", INIT_PY),
         (main_pkg_dir / "_version.py", VERSION_PY),
         (www_dir / "theme" / "overrides" / "main.html", THEME_OVERRIDE_MAIN),
@@ -1018,7 +1049,11 @@ def main():
         init_project(config)
         create_project(config)
         project_created = True
-        if config_mode == ConfigMode.non_interactive or config[ConfigKey.barebones]:
+        if (
+            config_mode == ConfigMode.non_interactive
+            or config[ConfigKey.barebones]
+            or config[ConfigKey.no_github]
+        ):
             return
 
         do_setup_github = get_yes_no_input(
@@ -1116,6 +1151,9 @@ MAKE_DOCS_SCRIPT = r"""!!!make_docs_script.py!!!
 """
 
 VERIFY_PR_COMMITS_SCRIPT = r"""!!!verify_pr_commits_script.py!!!
+"""
+
+RELEASE_NEW_VERSION_SCRIPT = r"""!!!release_new_version.py!!!
 """
 
 INIT_PY = r"""from ._version import __version__

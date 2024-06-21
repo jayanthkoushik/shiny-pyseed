@@ -728,6 +728,7 @@ class _BaseTestCreateProject(TestCase):
             pyseed.ConfigKey.update_pc_hooks_on_schedule: False,
             pyseed.ConfigKey.add_deps: "",
             pyseed.ConfigKey.add_dev_deps: "",
+            pyseed.ConfigKey.no_github: False,
         }
 
     def tearDown(self):
@@ -737,55 +738,78 @@ class _BaseTestCreateProject(TestCase):
 
 class TestInitProject(_BaseTestCreateProject):
     def test_init_project_writes_all_expected_files(self):
-        pyseed.init_project(self.config)
-        project_dir = Path(self.tempdir.name) / self.project_name
+        for i, no_github in enumerate([False, True]):
+            if i != 0:
+                self.tearDown()
+                self.setUp()
 
-        self.assertTrue(project_dir.exists())
-        for fname in [
-            ".github/workflows/check-pr.yml",
-            ".github/workflows/release-new-version.yml",
-            ".github/workflows/run-tests.yml",
-            ".github/workflows/update-pre-commit-hooks.yml",
-            "scripts/commit_and_tag_version.py",
-            "scripts/gen_site_usage_pages.py",
-            "scripts/make_docs.py",
-            "scripts/verify_pr_commits.py",
-            "src/test_project/__init__.py",
-            "src/test_project/_version.py",
-            "src/test_project/py.typed",
-            "tests/__init__.py",
-            "www/theme/overrides/main.html",
-            ".commitlintrc.yaml",
-            ".cspell.json",
-            ".editorconfig",
-            ".gitattributes",
-            ".gitignore",
-            ".pre-commit-config.yaml",
-            ".prettierignore",
-            ".prettierrc.js",
-            "CHANGELOG.md",
-            "LICENSE.md",
-            "README.md",
-            "mkdocs.yml",
-            "project-words.txt",
-            "pyproject.toml",
-        ]:
-            with self.subTest(fname):
-                self.assertTrue((project_dir / fname).exists())
+            self.config[pyseed.ConfigKey.no_github] = no_github
 
-        www_src_dir = project_dir / "www" / "src"
-        for fname in ["CHANGELOG.md", "LICENSE.md"]:
-            with self.subTest(fname):
-                self.assertEqual(
-                    (www_src_dir / fname).resolve(), (project_dir / fname).resolve()
-                )
-        self.assertEqual(
-            (www_src_dir / "index.md").resolve(), (project_dir / "README.md").resolve()
-        )
-        scripts_dir = project_dir / "scripts"
-        for fpath in scripts_dir.glob("*"):
-            with self.subTest(fpath):
-                self.assertTrue(os.access(fpath, os.X_OK))
+            pyseed.init_project(self.config)
+            project_dir = Path(self.tempdir.name) / self.project_name
+
+            self.assertTrue(project_dir.exists())
+            check_exist_fnames = [
+                "scripts/gen_site_usage_pages.py",
+                "scripts/make_docs.py",
+                "src/test_project/__init__.py",
+                "src/test_project/_version.py",
+                "src/test_project/py.typed",
+                "tests/__init__.py",
+                "www/theme/overrides/main.html",
+                ".commitlintrc.yaml",
+                ".cspell.json",
+                ".editorconfig",
+                ".gitattributes",
+                ".gitignore",
+                ".pre-commit-config.yaml",
+                ".prettierignore",
+                ".prettierrc.js",
+                "CHANGELOG.md",
+                "LICENSE.md",
+                "README.md",
+                "mkdocs.yml",
+                "project-words.txt",
+                "pyproject.toml",
+            ]
+            no_github_fnames = ["scripts/release_new_version.py"]
+            yes_github_fnames = [
+                "scripts/commit_and_tag_version.py",
+                "scripts/verify_pr_commits.py",
+                ".github/workflows/check-pr.yml",
+                ".github/workflows/release-new-version.yml",
+                ".github/workflows/run-tests.yml",
+                ".github/workflows/update-pre-commit-hooks.yml",
+            ]
+            if no_github:
+                check_exist_fnames.extend(no_github_fnames)
+                check_noexist_fnames = yes_github_fnames
+            else:
+                check_exist_fnames.extend(yes_github_fnames)
+                check_noexist_fnames = no_github_fnames
+
+            for fname in check_exist_fnames:
+                with self.subTest(no_github=no_github, should_exist=fname):
+                    self.assertTrue((project_dir / fname).exists())
+            for fname in check_noexist_fnames:
+                with self.subTest(no_github=no_github, should_not_exist=fname):
+                    self.assertFalse((project_dir / fname).exists())
+
+            www_src_dir = project_dir / "www" / "src"
+            for fname in ["CHANGELOG.md", "LICENSE.md"]:
+                with self.subTest(no_github=no_github, should_exist=fname):
+                    self.assertEqual(
+                        (www_src_dir / fname).resolve(), (project_dir / fname).resolve()
+                    )
+            self.assertEqual(
+                (www_src_dir / "index.md").resolve(),
+                (project_dir / "README.md").resolve(),
+            )
+
+            scripts_dir = project_dir / "scripts"
+            for fpath in scripts_dir.glob("*"):
+                with self.subTest(no_github=no_github, should_exist=fpath):
+                    self.assertTrue(os.access(fpath, os.X_OK))
 
     def test_init_project_writes_all_expected_files_in_barebones_mode(self):
         self.config[pyseed.ConfigKey.barebones] = True
@@ -997,23 +1021,32 @@ class TestInitProject(_BaseTestCreateProject):
 )
 class TestCreateProject(_BaseTestCreateProject):
     def test_create_project_runs_without_error(self):
-        self.config[pyseed.ConfigKey.add_deps] = "requests;flask>=2.0,<3.0"
-        self.config[pyseed.ConfigKey.add_dev_deps] = "black"
-        pyseed.init_project(self.config)
-        pyseed.create_project(self.config)
-        pdone = pyseed.vrun(
-            ["git", "log", "--max-count=1", "--pretty=format:%s"], capture_output=True
-        )
-        self.assertEqual(pdone.stdout.strip(), "chore: initial commit")
-        pdone = pyseed.vrun(
-            ["poetry", "run", "pip", "list", "--format", "freeze"], capture_output=True
-        )
-        installed_pkgs = {
-            line.split("==")[0].lower() for line in pdone.stdout.splitlines()
-        }
-        for pkg in ["requests", "flask", "black"]:
-            with self.subTest(pkg):
-                self.assertIn(pkg, installed_pkgs)
+        for i, no_github in enumerate([False, True]):
+            if i != 0:
+                self.tearDown()
+                self.setUp()
+
+            self.config[pyseed.ConfigKey.no_github] = no_github
+            self.config[pyseed.ConfigKey.add_deps] = "requests;flask>=2.0,<3.0"
+            self.config[pyseed.ConfigKey.add_dev_deps] = "black"
+            pyseed.init_project(self.config)
+            pyseed.create_project(self.config)
+            pdone = pyseed.vrun(
+                ["git", "log", "--max-count=1", "--pretty=format:%s"],
+                capture_output=True,
+            )
+            with self.subTest(no_github=no_github):
+                self.assertEqual(pdone.stdout.strip(), "chore: initial commit")
+            pdone = pyseed.vrun(
+                ["poetry", "run", "pip", "list", "--format", "freeze"],
+                capture_output=True,
+            )
+            installed_pkgs = {
+                line.split("==")[0].lower() for line in pdone.stdout.splitlines()
+            }
+            for pkg in ["requests", "flask", "black"]:
+                with self.subTest(no_github=no_github, package=pkg):
+                    self.assertIn(pkg, installed_pkgs)
 
     def test_create_project_runs_without_error_in_barebones_mode(self):
         self.config[pyseed.ConfigKey.barebones] = True
@@ -1039,6 +1072,47 @@ class TestSetupGitHub(_BaseTestCreateProject):
     def tearDown(self) -> None:
         super().tearDown()
         self.github_api.call(f"repos/{GH_USER}/{self.project_name}", "DELETE")
+
+    def test_offline_release_script_pushes_to_github(self):
+        self.config[pyseed.ConfigKey.no_github] = True
+        pyseed.init_project(self.config)
+        pyseed.create_project(self.config)
+        self.assertTrue(Path(os.getcwd()).resolve(), Path(self.tempdir.name).resolve())
+
+        repo_creation_response = self.github_api.call(
+            "user/repos",
+            "POST",
+            {
+                "name": self.project_name,
+                "description": self.config[pyseed.ConfigKey.description],
+                "homepage": self.config[pyseed.ConfigKey.url],
+            },
+        )
+        try:
+            repo_origin = repo_creation_response["ssh_url"]
+        except KeyError:
+            raise pyseed.GitHubAPI.Error(
+                f"response:\n{repo_creation_response}"
+            ) from None
+
+        pyseed.vrun(["git", "remote", "add", "origin", repo_origin])
+        pyseed.vrun(["git", "push", "-u", "origin", "master"])
+        pyseed.vrun(
+            [
+                "poetry",
+                "run",
+                "scripts/release_new_version.py",
+                "-f",
+                "--no-pypi-publish",
+            ]
+        )
+
+        pdone = pyseed.vrun(
+            ["git", "ls-remote", "--tags", "origin"], capture_output=True, check=True
+        )
+        tags_data = pdone.stdout
+        first_tag = tags_data.splitlines()[0].split("\t")[1]
+        self.assertEqual(first_tag, "refs/tags/v1.0.0")
 
     def test_setup_github_runs_without_error(self):
         pyseed.init_project(self.config)
@@ -1125,6 +1199,24 @@ class TestMain(_BaseTestCreateProject):
 
     def test_main_does_not_setup_github_in_barebones_mode(self):
         self.config[pyseed.ConfigKey.barebones] = True
+        mock_get_conf = MagicMock(
+            return_value=(pyseed.ConfigMode.interactive, self.config)
+        )
+        with (
+            patch.multiple(
+                "pyseed",
+                get_conf=mock_get_conf,
+                init_project=self.mock_init_project,
+                create_project=self.mock_create_project,
+                setup_github=self.mock_setup_github,
+            ),
+            patch.multiple("sys", stdin=StringIO(initial_value="y"), stdout=StringIO()),
+        ):
+            pyseed.main()
+            self.mock_setup_github.assert_not_called()
+
+    def test_main_does_not_setup_github_if_no_github(self):
+        self.config[pyseed.ConfigKey.no_github] = True
         mock_get_conf = MagicMock(
             return_value=(pyseed.ConfigMode.interactive, self.config)
         )

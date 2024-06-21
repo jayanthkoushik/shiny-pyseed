@@ -86,7 +86,9 @@ creation) is skipped in non-interactive mode.**
 3. Write commit messages conforming to the [Conventional Commits](https://www.conventionalcommits.org)
    specification, and maintain a linear commit history.
 4. [Trigger](https://docs.github.com/en/actions/using-workflows/manually-running-a-workflow)
-   the `release-new-version` workflow to create a new release.
+   the `release-new-version` workflow to create a new release. If the
+   project was created with GitHub support disabled, use `scripts/release_new_version.py`.
+   Run `scripts/release_new_version.py -h` for options.
 5. If working on a new clone of the repository, initialize the project
    environment by running:
 
@@ -166,6 +168,9 @@ specifying them are:
     Dependencies should be separated by ';', and follow [poetry specifications](https://python-poetry.org/docs/dependency-specification/).
 13. `--add-dev-deps`: Same as `--add-deps`, except the dependencies are
     added to the 'dev' group.
+14. `--no-github`: Disable GitHub support. This will omit adding any
+    GitHub related files to the project, and will skip GitHub setup in
+    interactive mode. It has no effect in barebones mode.
 
 <!--------------------------------------------------------------------->
 
