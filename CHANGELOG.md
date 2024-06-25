@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.1.0](https://github.com/jayanthkoushik/shiny-pyseed/compare/v1.0.3...v1.1.0) (2024-06-25)
+
+
+### Features
+
+* add support for doctests ([cb76046](https://github.com/jayanthkoushik/shiny-pyseed/commit/cb760462a238bc0166e05f250a848a023e591768))
+* allow disabling github support ([0b3f750](https://github.com/jayanthkoushik/shiny-pyseed/commit/0b3f750c959cd2bf953d216b4553862066ecb1d0))
+* allow specifying additional project dependencies ([aad1765](https://github.com/jayanthkoushik/shiny-pyseed/commit/aad17659eb4add385c64a2bc3e89fbd5bd748360))
+
+
+### Bug Fixes
+
+* fix issue preventing scripts from being made executable ([dd3b3d2](https://github.com/jayanthkoushik/shiny-pyseed/commit/dd3b3d2400f5fe40c8becd931334559b490bb49a))
+
 ## [1.0.3](https://github.com/jayanthkoushik/shiny-pyseed/compare/v1.0.2...v1.0.3) (2024-06-14)
 
 
