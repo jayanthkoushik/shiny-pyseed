@@ -1,0 +1,1307 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Documentation for 'shiny-pyseed'.">
+      
+      
+        <meta name="author" content="Jayanth Koushik">
+      
+      
+        <link rel="canonical" href="https://jkoushik.me/shiny-pyseed/latest/">
+      
+      
+      
+        <link rel="next" href="LICENSE/">
+      
+      
+      <link rel="icon" href="assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.16">
+    
+    
+      
+        <title>shiny-pyseed - shiny-pyseed</title>
+      
+    
+    
+      <link rel="stylesheet" href="assets/stylesheets/main.bcfcd587.min.css">
+      
+        
+        <link rel="stylesheet" href="assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#shiny-pyseed" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+          <aside class="md-banner md-banner--warning">
+            <div class="md-banner__inner md-grid md-typeset">
+               You are viewing an old version of
+this page.
+<a href="../.">
+  <strong>Click here to go to latest version.</strong>
+</a>
+
+            </div>
+            <script>var el=document.querySelector("[data-md-component=outdated]"),outdated=__md_get("__outdated",sessionStorage);!0===outdated&&el&&(el.hidden=!1)</script>
+          </aside>
+        
+      </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="." title="shiny-pyseed" class="md-header__button md-logo" aria-label="shiny-pyseed" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            shiny-pyseed
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              shiny-pyseed
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5c-.84 0-1.65.15-2.39.42L12 2M3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29L3.34 7m.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14L3.36 17M20.65 7l-1.77 3.79a7.023 7.023 0 0 0-2.38-4.15l4.15.36m-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29L20.64 17M12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44L12 22Z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3 3.19.09m3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95 2.06.05m-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31Z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var media,input,key,value,palette=__md_get("__palette");if(palette&&palette.color){"(prefers-color-scheme)"===palette.color.media&&(media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']"),palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent"));for([key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/jayanthkoushik/shiny-pyseed" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="." class="md-tabs__link">
+          
+  
+    
+  
+  Home
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="." title="shiny-pyseed" class="md-nav__button md-logo" aria-label="shiny-pyseed" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    shiny-pyseed
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/jayanthkoushik/shiny-pyseed" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1" checked>
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="." class="md-nav__link md-nav__link--active">
+              
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link md-nav__link--active" for="__nav_1" id="__nav_1_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_1">
+            <span class="md-nav__icon md-icon"></span>
+            Home
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="LICENSE/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    License
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="CHANGELOG/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Changelog
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#features" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      Usage
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Usage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      Requirements
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#creating-a-new-project" class="md-nav__link">
+    <span class="md-ellipsis">
+      Creating a new project
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#workflow-for-bootstrapped-projects" class="md-nav__link">
+    <span class="md-ellipsis">
+      Workflow for bootstrapped projects
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#barebones-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      Barebones mode
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bootstrapping-details" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bootstrapping details
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Bootstrapping details">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#project-data-collection" class="md-nav__link">
+    <span class="md-ellipsis">
+      Project data collection
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#project-folder-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      Project folder setup
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#github-repository-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      GitHub repository setup
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#feature-details" class="md-nav__link">
+    <span class="md-ellipsis">
+      Feature details
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Feature details">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#poetry" class="md-nav__link">
+    <span class="md-ellipsis">
+      Poetry
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Poetry">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#versioning" class="md-nav__link">
+    <span class="md-ellipsis">
+      Versioning
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#packaging-type-information" class="md-nav__link">
+    <span class="md-ellipsis">
+      Packaging type information
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#housekeeping" class="md-nav__link">
+    <span class="md-ellipsis">
+      Housekeeping
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      Tests
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Tests">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#doctests" class="md-nav__link">
+    <span class="md-ellipsis">
+      Doctests
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#docs" class="md-nav__link">
+    <span class="md-ellipsis">
+      Docs
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Docs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#offline-docs" class="md-nav__link">
+    <span class="md-ellipsis">
+      Offline docs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#web-docs" class="md-nav__link">
+    <span class="md-ellipsis">
+      Web docs
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pre-commit-hooks" class="md-nav__link">
+    <span class="md-ellipsis">
+      Pre-commit hooks
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#editorconfig" class="md-nav__link">
+    <span class="md-ellipsis">
+      EditorConfig
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#github-actions" class="md-nav__link">
+    <span class="md-ellipsis">
+      GitHub Actions
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="shiny-pyseed">shiny-pyseed<a class="headerlink" href="#shiny-pyseed" title="Permanent link">&para;</a></h1>
+<p>shiny-pyseed is an opinionated bootstrapper for Python projects, geared
+towards fast single person development.</p>
+<!--------------------------------------------------------------------->
+
+<h2 id="features">Features<a class="headerlink" href="#features" title="Permanent link">&para;</a></h2>
+<!--------------------------------------------------------------------->
+
+<ul>
+<li><a href="https://python-poetry.org">Poetry</a> is used to manage dependencies and
+  virtual environments.</li>
+<li><a href="https://pre-commit.com">pre-commit</a> hooks are installed to automate
+  housekeeping tasks (like linting and formatting).</li>
+<li>Documentation is generated from docstrings using <a href="https://www.sphinx-doc.org">Sphinx</a>,
+  and spell checked with <a href="https://cspell.org">CSpell</a>.</li>
+<li>Project website is built using <a href="https://www.mkdocs.org">MkDocs</a>,
+  and published through <a href="https://pages.github.com">GitHub Pages</a>.</li>
+<li>Releasing new versions is a one-click action.</li>
+<li>Commits are required to conform to the <a href="https://www.conventionalcommits.org">Conventional Commits</a>
+    specification, so versions are updated automatically, and a
+    changelog is generated for each release.</li>
+<li>Releases are published to both GitHub and PyPI.</li>
+<li>A GitHub repository for the project is created and configured.</li>
+<li>Branch and tag protection rules are setup.</li>
+<li>All pull requests are required to pass tests.</li>
+<li>Pre-commit hooks are periodically auto-updated.</li>
+</ul>
+<!--------------------------------------------------------------------->
+
+<h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
+<!--------------------------------------------------------------------->
+
+<h3 id="requirements">Requirements<a class="headerlink" href="#requirements" title="Permanent link">&para;</a></h3>
+<p>shiny-pyseed requires Python version 3.9 or above, and <a href="https://python-poetry.org">Poetry</a>.
+It has been tested on Windows, macOS, and Ubuntu; instructions in this
+document will be provided for a Unix-like shell, which should work on
+macOS and GNU/Linux distributions.</p>
+<!--------------------------------------------------------------------->
+
+<h3 id="creating-a-new-project">Creating a new project<a class="headerlink" href="#creating-a-new-project" title="Permanent link">&para;</a></h3>
+<p>The bootstrap script, <code>pyseed.py</code> is hosted on the project website, and
+can be downloaded and executed in a single command like so:</p>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-sSL<span class="w"> </span>https://jkoushik.me/shiny-pyseed/latest/pyseed.py<span class="w"> </span><span class="p">|</span><span class="w"> </span>python3<span class="w"> </span>-
+</code></pre></div>
+<p>Alternatively, you can download or clone the project repository and run
+<code>dist/pyseed.py</code>.</p>
+<p><strong>NOTE: <code>pyseed.py</code> cannot be run from inside a virtual environment, and
+will exit with an error if it is.</strong></p>
+<p>Both of the above options will start an interactive session to configure
+and create a new project. The bootstrap process runs in two phases. In
+the first phase, a local Git repository for the project is created,
+dependencies are installed to a new virtual environment, and an initial
+commit is created. In the second (optional) phase, a GitHub repository
+is created for the project, API keys and secrets needed for releases are
+uploaded, and the project is pushed.</p>
+<p>To bootstrap a project non-interactively (for example from a script),
+pass command line options to the script. For example:</p>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-sSL<span class="w"> </span>https://jkoushik.me/shiny-pyseed/latest/pyseed.py<span class="w"> </span><span class="p">|</span><span class="w"> </span>python3<span class="w"> </span>-<span class="w"> </span>--path<span class="w"> </span>testdir/testproject
+</code></pre></div>
+<p>This will create a new project inside <code>testdir/testproject</code> using
+default options. <strong>Note that the second phase (GitHub repository
+creation) is skipped in non-interactive mode.</strong></p>
+<!--------------------------------------------------------------------->
+
+<h3 id="workflow-for-bootstrapped-projects">Workflow for bootstrapped projects<a class="headerlink" href="#workflow-for-bootstrapped-projects" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Use Poetry to run commands in the project&rsquo;s virtual environment.</li>
+<li>Add files with doctests to <code>DOCTEST_MODULES</code> in <code>tests/test_doctests.py</code>.</li>
+<li>Follow <a href="https://google.github.io/styleguide/pyguide.html#383-functions-and-methods">Google&rsquo;s style guide</a>
+   for writing docstrings.</li>
+<li>Write commit messages conforming to the <a href="https://www.conventionalcommits.org">Conventional Commits</a>
+   specification, and maintain a linear commit history.</li>
+<li><a href="https://docs.github.com/en/actions/using-workflows/manually-running-a-workflow">Trigger</a>
+   the <code>release-new-version</code> workflow to create a new release. If the
+   project was created with GitHub support disabled, use <code>scripts/release_new_version.py</code>.
+   Run <code>scripts/release_new_version.py -h</code> for options.</li>
+<li>If working on a new clone of the repository, initialize the project
+   environment by running:</li>
+</ol>
+<div class="highlight"><pre><span></span><code>poetry<span class="w"> </span>install<span class="w"> </span>--all-extras
+poetry<span class="w"> </span>run<span class="w"> </span>pre-commit<span class="w"> </span>install
+</code></pre></div>
+<!--------------------------------------------------------------------->
+
+<h3 id="barebones-mode">Barebones mode<a class="headerlink" href="#barebones-mode" title="Permanent link">&para;</a></h3>
+<p>shiny-pyseed can also create a barebones project which does not include:
+documentation/website support, commit message enforcing, and GitHub
+workflows. Also in barebones mode, the project virtual environment is
+created in <a href="https://python-poetry.org/docs/basic-usage/#operating-modes">non-package mode</a>.</p>
+<!--------------------------------------------------------------------->
+
+<h2 id="bootstrapping-details">Bootstrapping details<a class="headerlink" href="#bootstrapping-details" title="Permanent link">&para;</a></h2>
+<!--------------------------------------------------------------------->
+
+<h3 id="project-data-collection">Project data collection<a class="headerlink" href="#project-data-collection" title="Permanent link">&para;</a></h3>
+<p>Metadata/config for the new project is collected interactively and/or
+from command line arguments. The bootstrap script has the following
+modes:</p>
+<ol>
+<li>Non-interactive mode: enabled if the script is called with command
+   line arguments, but <em>not</em> the <code>-i/--interactive</code> argument. In this
+   case, all config must be provided through command line arguments, and
+   the <code>--project</code> argument, which specifies the project path, is
+   required.</li>
+<li>Fully interactive mode: enabled if the script is called without any
+   command line arguments.</li>
+<li>Semi-interactive mode: enabled if the script is called with the
+   <code>-i/--interactive</code> argument. Any additional command line arguments
+   will become default config values, which can be overridden
+   interactively.</li>
+</ol>
+<p>The available configurations, and the command line arguments for
+specifying them are:</p>
+<ol>
+<li><code>--barebones</code>: Enable barebones mode. If enabled, some of the other
+   arguments will be ignored, and a barebones project will be created.</li>
+<li><code>--project &lt;PATH&gt;</code>: Path where the new project is created. This is
+   the only required configuration.</li>
+<li><code>--description &lt;DESCRIPTION&gt;</code>: Project description.</li>
+<li><code>--url &lt;URL&gt;</code>: URL for project docs. This is needed by MkDocs; see <a href="https://www.mkdocs.org/user-guide/configuration/#site_url">https://www.mkdocs.org/user-guide/configuration/#site_url</a>.
+   It is ignored in barebones mode, which does not have MkDocs support.</li>
+<li><code>--pkg &lt;PKG&gt;</code>: Main Python package name. The project is initialized
+   with a single package of this name. If not specified, the final
+   component of the project path will be used; for example if the
+   project path is <code>foo/bar/spam-ham</code>, then the default main package
+   name will be <code>spam_ham</code>.</li>
+<li><code>--no-mit</code>: Do not include the MIT license.</li>
+<li><code>--authors &lt;AUTHORS&gt;</code>: Project authors. The project authors must be
+   specified as a comma separated list of names and emails in the form
+   <code>name &lt;email&gt;</code>. For example <code>Author One &lt;aone@example.org&gt;, Author
+   Two &lt;atwo@example.org&gt;</code>. If not provided, the script will try to read
+   the global Git config to get the user name and email, and use it as
+   the sole author.</li>
+<li><code>--pym &lt;3.MINOR.PATCH&gt;</code>: Minimum supported Python version. Note that
+   this cannot be lower than 3.9.</li>
+<li><code>--pyM &lt;3.MINOR.PATCH&gt;</code>: Maximum Python version. This only affects
+   the versions used for running tests with GitHub actions. It has no
+   effect in barebones mode since GitHub workflows are not included.</li>
+<li><code>--no-py-typed</code>: Do not add a <code>py.typed</code> file to the Python package.
+    This file indicates that a package provides type hints.</li>
+<li><code>--no-pc-cron</code>: Do not add support for updating pre-commit hooks
+    monthly through GitHub actions. Without this option, the script
+    creates a periodic GitHub action that will run <code>pre-commit
+    autoupdate</code> and create a pull request with the changes. It is
+    ignored in barebones mode.</li>
+<li><code>--add-deps</code>: Additional Python dependencies to add to the project.
+    Dependencies should be separated by &lsquo;;&rsquo;, and follow <a href="https://python-poetry.org/docs/dependency-specification/">poetry specifications</a>.</li>
+<li><code>--add-dev-deps</code>: Same as <code>--add-deps</code>, except the dependencies are
+    added to the &lsquo;dev&rsquo; group.</li>
+<li><code>--no-github</code>: Disable GitHub support. This will omit adding any
+    GitHub related files to the project, and will skip GitHub setup in
+    interactive mode. It has no effect in barebones mode.</li>
+<li><code>--no-doctests</code>: Disable doctests support. This will omit adding
+    <code>test_doctests.py</code>, which contains boilerplate code for running
+    doctests.</li>
+</ol>
+<!--------------------------------------------------------------------->
+
+<h3 id="project-folder-setup">Project folder setup<a class="headerlink" href="#project-folder-setup" title="Permanent link">&para;</a></h3>
+<p>Once project information has been collected, the new project is
+bootstrapped with the following operations:</p>
+<ol>
+<li>The project folder is created.</li>
+<li>Data files for the project are written.</li>
+<li>A Git repository is initialized.</li>
+<li><code>poetry install</code> is called to create the project virtual environment,
+   and install the project itself.</li>
+<li>Dev dependencies are added: <code>pre-commit</code>, <code>ruff</code>, <code>mypy</code>, <code>sphinx</code>,
+   <code>sphinx-markdown-builder</code>, <code>mkdocstrings</code>, <code>mkdocs-material</code>,
+   <code>mkdocs-gen-files</code>, <code>mkdocs-literate-nav</code>, <code>mike</code>.</li>
+<li>pre-commit hooks are installed and updated.</li>
+<li>Prettier is used to format <code>pyproject.toml</code>.</li>
+<li>Documentation is built.</li>
+<li><code>mkdocs build</code> is called to verify that the site can be built.</li>
+<li>Initial Git commit is created.</li>
+</ol>
+<!--------------------------------------------------------------------->
+
+<h3 id="github-repository-setup">GitHub repository setup<a class="headerlink" href="#github-repository-setup" title="Permanent link">&para;</a></h3>
+<p>After the project folder has been bootstrapped, shiny-pyseed can
+optionally also configure a GitHub repository for the project. This is
+not done in non-interactive mode, and also requires some user action.
+The following operations are involved:</p>
+<ol>
+<li>The user will need to create personal access tokens for the GitHub
+   API. For information on creating a token, see
+   <a href="https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens?creating-a-token">https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens?creating-a-token</a>.
+   Two tokens are required:</li>
+<li>A token with &lsquo;administration:write&rsquo; and &lsquo;secrets:write&rsquo;
+      permissions, used to create the GitHub repository. This token can
+      be shared between projects, but it is highly recommended to create
+      a separate token just for shiny-pyseed.</li>
+<li>A token with &lsquo;contents:write&rsquo; and &lsquo;pull_requests:write&rsquo;
+      permissions for the project repository. This token is used for
+      creating GitHub releases and publishing the website.</li>
+<li>The user will also need to create a PyPI access token for uploading
+   releases to PyPI. For details, see <a href="https://pypi.org/help/#apitoken">https://pypi.org/help/#apitoken</a>.</li>
+<li>The GitHub API is called to create a repository with the same name as
+   the project.</li>
+<li><code>pyproject.toml</code> and <code>mkdocs.yml</code> are updated with the repository
+   name, and the initial commit is amended.</li>
+<li>The GitHub repository is added as a remote, and the initial commit is
+   pushed.</li>
+<li>Branch protection rules are configured for &lsquo;master&rsquo; to require pull
+   request reviews, and have a linear commit history.</li>
+<li>Tag protection rules are setup for <code>v*</code> tags. This prevents
+   non-owners from creating releases.</li>
+<li>Workflow permissions are configured, to enable pull requests from
+   workflows.</li>
+<li>Two repository secrets are created: <code>REPO_PAT</code> containing the project
+   specific GitHub API token, and <code>PYPI_TOKEN</code> containing the PyPI
+   access token. <strong>Note that if GitHub repository configuration is
+   skipped, and a repository is created manually, these secrets must be
+   created for the release action to work.</strong></li>
+</ol>
+<!--------------------------------------------------------------------->
+
+<h2 id="feature-details">Feature details<a class="headerlink" href="#feature-details" title="Permanent link">&para;</a></h2>
+<!--------------------------------------------------------------------->
+
+<p>This section describes the full set of features in a shiny-pyseed
+project. For demonstration, a demo project will be used, created with
+default options, to a folder named <code>testproject</code>, which will look like
+this:</p>
+<!-- cSpell: disable -->
+
+<div class="highlight"><pre><span></span><code>./
+├── docs/
+│   ├── index.md
+│   └── testproject.md
+├── .github/
+│   └── workflows/
+│       ├── check-pr.yml
+│       ├── release-new-version.yml
+│       ├── run-tests.yml
+│       └── update-pre-commit-hooks.yml
+├── scripts/
+│   ├── commit_and_tag_version.py*
+│   ├── gen_site_usage_pages.py*
+│   ├── make_docs.py*
+│   └── verify_pr_commits.py*
+├── src/
+│   └── testproject/
+│       ├── __init__.py
+│       ├── _version.py
+│       └── py.typed
+├── tests/
+│   └── __init__.py
+│   └── test_doctests.py
+├── www/
+│   ├── src/
+│   │   ├── CHANGELOG.md -&gt; ../../CHANGELOG.md
+│   │   ├── index.md -&gt; ../../README.md
+│   │   └── LICENSE.md -&gt; ../../LICENSE.md
+│   └── theme/
+│       └── overrides/
+│           └── main.html
+├── CHANGELOG.md
+├── .commitlintrc.yaml
+├── .cspell.json
+├── .editorconfig
+├── .gitattributes
+├── .gitignore
+├── LICENSE.md
+├── mkdocs.yml
+├── poetry.lock
+├── .pre-commit-config.yaml
+├── .prettierignore
+├── .prettierrc.js
+├── project-words.txt
+├── pyproject.toml
+└── README.md
+</code></pre></div>
+<!-- cSpell: enable -->
+
+<p>We will now look into the various components.</p>
+<h3 id="poetry">Poetry<a class="headerlink" href="#poetry" title="Permanent link">&para;</a></h3>
+<p>shiny-pyseed uses Poetry to manage dependencies and virtual
+environments. A virtual environment is created as part of the project
+bootstrap process. See <a href="https://python-poetry.org/docs/managing-environments">https://python-poetry.org/docs/managing-environments</a>
+for details on how to manage the environment creation. Use <code>poetry run</code>
+to run commands inside the created environment.</p>
+<p>The <code>packages</code> key inside <code>pyproject.toml</code> should contain all the
+packages for the project. Initially, this will contain the main package
+created during bootstrap. <strong>Additional packages must be added to this
+list.</strong></p>
+<h4 id="versioning">Versioning<a class="headerlink" href="#versioning" title="Permanent link">&para;</a></h4>
+<p><a href="https://github.com/mtkennerly/poetry-dynamic-versioning">poetry-dynamic-versioning</a>
+is used to automatically manage the project version using Git tags. On
+build, the latest version tag will be written to
+<code>src/&lt;PACKAGE&gt;/_version.py</code>. The version can be accessed through
+<code>__version__</code>, i.e., you can do <code>from &lt;PACKAGE&gt; import __version__</code>.</p>
+<h4 id="packaging-type-information">Packaging type information<a class="headerlink" href="#packaging-type-information" title="Permanent link">&para;</a></h4>
+<p>By default, shiny-pyseed adds an empty file named <code>py.typed</code> to the main
+package, which indicates that the package provides type hints. If you do
+not intend to support type checking, remove this file. For more, see
+<a href="https://typing.readthedocs.io/en/latest/spec/distributing.html#packaging-type-information">https://typing.readthedocs.io/en/latest/spec/distributing.html#packaging-type-information</a>.</p>
+<!--------------------------------------------------------------------->
+
+<h3 id="housekeeping">Housekeeping<a class="headerlink" href="#housekeeping" title="Permanent link">&para;</a></h3>
+<p><a href="https://docs.astral.sh/ruff/">Ruff</a> is used for formatting and linting
+Python files, and is configured through <code>pyproject.toml</code>. See
+<code>[tool.ruff]</code> and its sub-sections.</p>
+<p><a href="https://mypy.readthedocs.io/en/stable/">mypy</a> is used for type
+checking. Its settings are in the <code>[tool.mypy]</code> section of
+<code>pyproject.toml</code>.</p>
+<p><a href="https://prettier.io">Prettier</a> is used to format all non-Python files.
+Default settings are used, and the config file, <code>.prettierrc.js</code> is only
+used to load an additional plugin for prettifying <code>toml</code> files.
+Files to be ignored by Prettier are listed in <code>.prettierignore</code>. As a
+general rule, automatically generated files should be added here.</p>
+<p>The Conventional Commits specification is a convention for commit
+messages to make them &ldquo;human and machine readable&rdquo;. shiny-pyseed
+enforces this convention through Git hooks. Commit messages are checked
+using <a href="https://commitlint.js.org">commitlint</a>, and will need to adhere
+to the rules specified in <code>.commitlintrc.yaml</code>. The rules are a slightly
+modified version of <a href="https://github.com/conventional-changelog/commitlint/tree/master/%40commitlint/config-conventional">@commitlint/config-conventional</a>,
+with lines restricted to 72 characters.</p>
+<p><a href="https://cspell.org">CSell</a> is used to spell check documentation
+(markdown files in <code>docs/</code>, and <code>README.md</code>). The config file,
+<code>.cspell.json</code>, defines a custom dictionary: <code>project-words.txt</code>. Words
+added to this file will be ignored by CSpell.</p>
+<!--------------------------------------------------------------------->
+
+<h3 id="tests">Tests<a class="headerlink" href="#tests" title="Permanent link">&para;</a></h3>
+<p>shiny-pyseed uses <code>unittest</code> as the testing framework; and test files
+should be put in the <code>tests/</code> directory. If you use a different testing
+framework, the following files need to be modified:
+<code>.pre-commit-config.yaml</code>, <code>.github/workflows/run-tests.yml</code>. Look for
+lines with <code>poetry run python -m unittest</code>, and modify them as needed.</p>
+<h4 id="doctests">Doctests<a class="headerlink" href="#doctests" title="Permanent link">&para;</a></h4>
+<p>shiny-pyseed can include boilerplate code for running doctests in
+<code>test_doctests.py</code>. Files with doctests should be added to
+<code>DOCTEST_MODULES</code>. These tests will be run by <code>unittest</code>. Any doctests
+inside <code>README.md</code> are also included.</p>
+<!--------------------------------------------------------------------->
+
+<h3 id="docs">Docs<a class="headerlink" href="#docs" title="Permanent link">&para;</a></h3>
+<p>shiny-pyseed provides support for docs in two formats. Offline docs in
+markdown, built by Sphinx, and online docs, built by MkDocs. Both
+formats are built automatically from docstrings in source code. So, some
+conventions need to be followed to ensure proper documentation
+generation. Docstrings should follow <a href="https://google.github.io/styleguide/pyguide.html#383-functions-and-methods">Google&rsquo;s style guide</a>.</p>
+<p>Here is a detailed example:</p>
+<p><strong><code>src/testproject/__init__.py</code></strong></p>
+<div class="highlight"><pre><span></span><code><span class="sd">&quot;&quot;&quot;This is a test project.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">._version</span> <span class="kn">import</span> <span class="n">__version__</span>
+</code></pre></div>
+<p><strong><code>src/testproject/spam.py</code></strong></p>
+<div class="highlight"><pre><span></span><code><span class="sd">&quot;&quot;&quot;This is the spam module.&quot;&quot;&quot;</span>
+
+
+<span class="k">class</span> <span class="nc">Ham</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;This is the Ham class.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        n: Number of eggs.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; from testproject.spam import Ham</span>
+<span class="sd">        &gt;&gt;&gt; ham = Ham(10)</span>
+<span class="sd">        &gt;&gt;&gt; print(ham.eggs())</span>
+<span class="sd">        10 eggs</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">=</span> <span class="n">n</span>
+
+    <span class="k">def</span> <span class="nf">eggs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Display the number of eggs.&quot;&quot;&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="si">}</span><span class="s2"> eggs&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p><strong><code>src/testproject/foo/__init__.py</code></strong></p>
+<div class="highlight"><pre><span></span><code><span class="sd">&quot;&quot;&quot;This is the foo subpackage.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">._bar</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="c1"># Note: we have to explicitly define `__all__` since this package does</span>
+<span class="c1"># not have a public interface.</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="n">_bar</span><span class="o">.</span><span class="n">__all__</span>  <span class="c1"># type: ignore</span>
+</code></pre></div>
+<p><strong><code>src/testproject/foo/_bar.py</code></strong></p>
+<div class="highlight"><pre><span></span><code><span class="c1"># No docstring here since this is a private module. Its members are</span>
+<span class="c1"># exposed directly through the foo package.</span>
+<span class="c1"># `__all__` can be used to control which members are documented.</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;baz&quot;</span><span class="p">,)</span>
+
+
+<span class="k">def</span> <span class="nf">nope</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;This won&#39;t get documented.</span>
+
+<span class="sd">    Since nope is not in `__all__`, it won&#39;t be documented.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+
+<span class="k">def</span> <span class="nf">baz</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;This is the baz function.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        x: A number.</span>
+<span class="sd">        y: A string.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A string combining the inputs.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2"> and </span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s2">&quot;</span>
+</code></pre></div>
+<h4 id="offline-docs">Offline docs<a class="headerlink" href="#offline-docs" title="Permanent link">&para;</a></h4>
+<p>To manually generate the offline docs, run <code>scripts/make_docs.py</code>. This
+script should be run inside the project virtual environment.
+Alternatively, <code>poetry run</code> can be used:</p>
+<div class="highlight"><pre><span></span><code>poetry<span class="w"> </span>run<span class="w"> </span>scripts/make_docs.py
+</code></pre></div>
+<p>Offline docs are built using
+<a href="https://www.sphinx-doc.org/en/master/man/sphinx-apidoc.html"><code>sphinx-apidoc</code></a>,
+<a href="https://www.sphinx-doc.org/en/master/man/sphinx-build.html"><code>sphinx-build</code></a>,
+<a href="https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html"><code>sphinx-autodoc</code></a>,
+<a href="https://www.sphinx-doc.org/en/master/usage/extensions/napoleon.html"><code>napoleon</code></a>, and
+<a href="https://github.com/liran-funaro/sphinx-markdown-builder"><code>sphinx-markdown-builder</code></a>.
+The table of contents is written to <code>docs/index.md</code>, and a separate doc
+file is created for each package and module.</p>
+<p>This is what the docs will look like for the sample code above:</p>
+<p><strong><code>docs/index.md</code></strong></p>
+<div class="highlight"><pre><span></span><code><span class="gh"># testproject</span>
+
+<span class="k">-</span><span class="w"> </span>[<span class="nt">testproject package</span>](<span class="na">testproject.md</span>)
+</code></pre></div>
+<p><strong><code>docs/testproject.md</code></strong></p>
+<div class="highlight"><pre><span></span><code><span class="gh"># testproject package</span>
+
+This is a test project.
+
+<span class="gu">## Subpackages</span>
+
+<span class="k">-</span><span class="w"> </span>[<span class="nt">testproject.foo package</span>](<span class="na">testproject.foo.md</span>)
+
+<span class="gu">## Submodules</span>
+
+<span class="k">-</span><span class="w"> </span>[<span class="nt">testproject.spam module</span>](<span class="na">testproject.spam.md</span>)
+</code></pre></div>
+<p><strong><code>docs/testproject.spam.md</code></strong></p>
+<div class="highlight"><pre><span></span><code><span class="gh"># testproject.spam module</span>
+
+This is the spam module.
+
+<span class="gu">### _class_ testproject.spam.Ham(n)</span>
+
+Bases: <span class="sb">`object`</span>
+
+This is the Ham class.
+
+<span class="k">-</span><span class="w"> </span><span class="gs">**Parameters**</span>
+
+  <span class="gs">**n**</span> (<span class="ge">_int_</span>) – Number of eggs.
+
+<span class="gu">### Examples</span>
+
+<span class="sb">```python</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span> <span class="nn">testproject.spam</span> <span class="kn">import</span> <span class="n">Ham</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">ham</span> <span class="o">=</span> <span class="n">Ham</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="nb">print</span><span class="p">(</span><span class="n">ham</span><span class="o">.</span><span class="n">eggs</span><span class="p">())</span>
+<span class="mi">10</span> <span class="n">eggs</span>
+<span class="sb">```</span>
+
+<span class="gu">#### eggs()</span>
+
+Display the number of eggs.
+</code></pre></div>
+<p><strong><code>docs/testproject.foo.md</code></strong></p>
+<div class="highlight"><pre><span></span><code><span class="gh"># testproject.foo package</span>
+
+This is the foo subpackage.
+
+<span class="gu">### testproject.foo.baz(x, y)</span>
+
+This is the baz function.
+
+<span class="k">-</span><span class="w"> </span><span class="gs">**Parameters**</span>
+
+<span class="w">  </span><span class="k">-</span><span class="w"> </span><span class="gs">**x**</span> (<span class="ge">_int_</span>) – A number.
+<span class="w">  </span><span class="k">-</span><span class="w"> </span><span class="gs">**y**</span> (<span class="ge">_str_</span>) – A string.
+
+<span class="k">-</span><span class="w"> </span><span class="gs">**Returns**</span>
+
+  A string combining the inputs.
+
+<span class="k">-</span><span class="w"> </span><span class="gs">**Return type**</span>
+
+  str
+</code></pre></div>
+<h4 id="web-docs">Web docs<a class="headerlink" href="#web-docs" title="Permanent link">&para;</a></h4>
+<p>To locally build the web docs, run <code>mkdocs build</code>. This will build the
+project site to <code>www/_site</code>, which can be served locally, for example,
+using Python&rsquo;s builtin HTTP server.</p>
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span>poetry<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>http.server<span class="w"> </span>--directory<span class="w"> </span>www/_site
+</code></pre></div>
+<p>The site should then be accessible on <code>localhost:8000</code>. The site for
+a sample project created with shiny-pyseed can be viewed at
+<a href="https://jkoushik.me/shiny-pyseed-demo">https://jkoushik.me/shiny-pyseed-demo</a>.</p>
+<p>Site building is configured through <code>mkdocs.yml</code>. Source files for the
+documentation are generated by <code>scripts/gen_site_usage_pages.py</code>. This
+script, which is called automatically by <code>mkdocs build</code>, navigates the
+package structure and generates a source file for each package and
+module, listing all public members. These source files are read by
+<a href="https://mkdocstrings.github.io"><code>mkdocstrings</code></a>, which uses docstrings
+from the listed members to generate html files. Navigation is managed
+using <a href="https://oprypin.github.io/mkdocs-literate-nav/"><code>mkdocs-literate-nav</code></a>.</p>
+<p><a href="https://squidfunk.github.io/mkdocs-material/">Material for MkDocs</a>
+is used for theming, with support for auto light/dark modes.</p>
+<p>shiny-pyseed uses the <a href="https://github.com/jimporter/mike">mike</a> plugin
+to manage documentation versioning. Each time a new major/minor release
+is made, a new version of the documentation is built, and all versions
+can be accessed in the project site. Patch releases will update the
+corresponding minor version. Note that this feature is not available
+when building the site locally.</p>
+<!--------------------------------------------------------------------->
+
+<h3 id="pre-commit-hooks">Pre-commit hooks<a class="headerlink" href="#pre-commit-hooks" title="Permanent link">&para;</a></h3>
+<p>shiny-pyseed uses <a href="https://pre-commit.com">pre-commit</a> to automate
+various tasks, using Git hooks. These hooks are installed automatically
+by the bootstrap script, and will run whenever a commit is made. If any
+of the hooks return a non-zero exit code, the commit is abandoned.
+Pre-commit hooks are configured in <code>.pre-commit-config.yaml</code>. The
+default configuration will:</p>
+<ul>
+<li>detect simple mistakes like broken symlinks, trailing newlines, etc.</li>
+<li>spell check the docs</li>
+<li>prettify files of supported types</li>
+<li>format Python files</li>
+<li>lint and type check Python files</li>
+<li>run tests</li>
+<li>build the offline docs</li>
+</ul>
+<!--------------------------------------------------------------------->
+
+<h3 id="editorconfig">EditorConfig<a class="headerlink" href="#editorconfig" title="Permanent link">&para;</a></h3>
+<p>shiny-pyseed comes with a simple <a href="https://editorconfig.org">EditorConfig</a>
+configuration file (<code>.editorconfig</code>), that configures whitespace and
+line endings.</p>
+<!--------------------------------------------------------------------->
+
+<h3 id="github-actions">GitHub Actions<a class="headerlink" href="#github-actions" title="Permanent link">&para;</a></h3>
+<p>Workflows for <a href="https://docs.github.com/en/actions">GitHub Actions</a> are
+provided in <code>.github/workflows</code>. Some of these workflows require
+<a href="https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions">secrets</a>,
+which are created by the optional second phase of the bootstrap script.
+They will need to be created manually if this phase was skipped. This
+section will indicate which of the following two secrets are needed by
+different workflows. <code>REPO_PAT</code> is a GitHub access token with
+&lsquo;contents:write&rsquo; and &lsquo;pull_requests:write&rsquo; premissions for the
+repository, and <code>PYPI_TOKEN</code> is an access key for PyPI.</p>
+<p><strong><code>release-new-version.yml</code></strong>
+This is the workflow for creating a new release of the project. It needs
+to be <a href="https://docs.github.com/en/actions/using-workflows/manually-running-a-workflow">triggered manually</a>,
+for example using the Actions tab on GitHub. It requires the <code>REPO_PAT</code>
+and <code>PYPI_TOKEN</code> secrets.</p>
+<p>This workflow will:</p>
+<ul>
+<li>run the test workflow (<code>run-tests.yml</code>), and check if it passes</li>
+<li>run pre-commit hooks on all files in the repository, and check if
+  there is no error</li>
+<li>bump the version and update <code>CHANGELOG.md</code> using
+  <code>scripts/commit_and_tag_version.py</code>, which is a wrapper around
+  <a href="https://github.com/absolute-version/commit-and-tag-version">commit-and-tag-version</a></li>
+<li>create a GitHub release using <a href="https://github.com/conventional-changelog/releaser-tools/tree/master/packages/conventional-github-releaser">conventional-github-releaser</a></li>
+<li>publish the project to PyPI</li>
+<li>publish the project site</li>
+</ul>
+<p><strong><code>check-pr.yml</code></strong>
+This workflow runs automatically on pull requests. It will call
+<code>scripts/verify_pr_commits.py</code> which runs <code>commitlint</code> on all commits in
+the pull request. It will also run the test workflow.</p>
+<p><strong><code>run-tests.yml</code></strong>
+This is a template workflow called by others to run tests. It runs tests
+on a matrix of operating systems (ubuntu-latest, macos-latest,
+windows-latest) and Python versions (configured during bootstrap).</p>
+<p><strong><code>update-pre-commit-hooks.yml</code></strong>
+This workflow calls <code>pre-commit autoupdate</code> to update hooks to their
+latest version. If there are any changes, it will create a pull request;
+this requires the <code>REPO_PAT</code> secret. By default, this workflow will run
+automatically every month. This can be skipped during bootstrap;
+alternatively, update or remove the <code>schedule</code> section in the workflow.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright (c) Jayanth Koushik
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": ".", "features": ["content.code.copy", "navigation.instant", "navigation.instant.progres", "navigation.tabs", "navigation.indexes", "navigation.top"], "search": "assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="assets/javascripts/bundle.bd41221c.min.js"></script>
+      
+    
+  </body>
+</html>
