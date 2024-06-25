@@ -16,9 +16,11 @@ types-pyyaml = "^6.0.12.20240311"
 
 [tool.mypy]
 ignore_missing_imports = true
+exclude = ["src/data/test_doctests.template.py"]
 
 [tool.ruff]
 target-version = "py39"
+exclude = ["src/data/test_doctests.template.py"]
 
 [tool.ruff.format]
 skip-magic-trailing-comma = true

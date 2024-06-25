@@ -81,15 +81,16 @@ creation) is skipped in non-interactive mode.**
 ### Workflow for bootstrapped projects
 
 1. Use Poetry to run commands in the project's virtual environment.
-2. Follow [Google's style guide](https://google.github.io/styleguide/pyguide.html#383-functions-and-methods)
+2. Add files with doctests to `DOCTEST_MODULES` in `tests/test_doctests.py`.
+3. Follow [Google's style guide](https://google.github.io/styleguide/pyguide.html#383-functions-and-methods)
    for writing docstrings.
-3. Write commit messages conforming to the [Conventional Commits](https://www.conventionalcommits.org)
+4. Write commit messages conforming to the [Conventional Commits](https://www.conventionalcommits.org)
    specification, and maintain a linear commit history.
-4. [Trigger](https://docs.github.com/en/actions/using-workflows/manually-running-a-workflow)
+5. [Trigger](https://docs.github.com/en/actions/using-workflows/manually-running-a-workflow)
    the `release-new-version` workflow to create a new release. If the
    project was created with GitHub support disabled, use `scripts/release_new_version.py`.
    Run `scripts/release_new_version.py -h` for options.
-5. If working on a new clone of the repository, initialize the project
+6. If working on a new clone of the repository, initialize the project
    environment by running:
 
    ```sh
@@ -171,6 +172,9 @@ specifying them are:
 14. `--no-github`: Disable GitHub support. This will omit adding any
     GitHub related files to the project, and will skip GitHub setup in
     interactive mode. It has no effect in barebones mode.
+15. `--no-doctests`: Disable doctests support. This will omit adding
+    `test_doctests.py`, which contains boilerplate code for running
+    doctests.
 
 <!--------------------------------------------------------------------->
 
@@ -269,6 +273,7 @@ this:
 │       └── py.typed
 ├── tests/
 │   └── __init__.py
+│   └── test_doctests.py
 ├── www/
 │   ├── src/
 │   │   ├── CHANGELOG.md -> ../../CHANGELOG.md
@@ -366,6 +371,13 @@ should be put in the `tests/` directory. If you use a different testing
 framework, the following files need to be modified:
 `.pre-commit-config.yaml`, `.github/workflows/run-tests.yml`. Look for
 lines with `poetry run python -m unittest`, and modify them as needed.
+
+#### Doctests
+
+shiny-pyseed can include boilerplate code for running doctests in
+`test_doctests.py`. Files with doctests should be added to
+`DOCTEST_MODULES`. These tests will be run by `unittest`. Any doctests
+inside `README.md` are also included.
 
 <!--------------------------------------------------------------------->
 

@@ -51,7 +51,7 @@ repos:
         language: system
         entry: poetry run ruff format
         types: [python]
-        exclude: "dist/pyseed.py"
+        exclude: "dist/pyseed.py|src/data/test_doctests\\.template\\.py"
       - id: lint
         name: Lint Python files
         language: system

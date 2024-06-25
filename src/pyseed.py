@@ -524,6 +524,9 @@ class ConfigKey(Enum):
         "disable github support by not including any github related files",
         False,
     )
+    no_doctests = BoolConfigKeySpec(
+        "no_doctests", "do not include boilerplate code to load doctests", False
+    )
 
 
 BAREBONES_MODE_IGNORED_CONFIG_KEYS = [
@@ -531,6 +534,7 @@ BAREBONES_MODE_IGNORED_CONFIG_KEYS = [
     ConfigKey.max_py_version,
     ConfigKey.update_pc_hooks_on_schedule,
     ConfigKey.no_github,
+    ConfigKey.no_doctests,
 ]
 
 
@@ -814,6 +818,12 @@ def init_project(config: dict[ConfigKey, Any]):
         vtouch(project_path / main_pkg_dir / "py.typed")
     vtouch(project_path / "tests" / "__init__.py")
 
+    if not config[ConfigKey.no_doctests]:
+        test_doctests_py = TEST_DOCTESTS_TEMPLATE.format(
+            main_pkg=config[ConfigKey.main_pkg]
+        )
+        vwritetext(project_path / "tests" / "test_doctests.py", test_doctests_py)
+
     web_src_dir = project_path / "www" / "src"
     for link_src, link_tgt in [
         ("CHANGELOG.md", "CHANGELOG.md"),
@@ -903,8 +913,6 @@ def create_project(config: dict[ConfigKey, Any]):
     vrun(["git", "add", "."])
     env = os.environ.copy()
     env["SKIP"] = "cspell"
-    if not config[ConfigKey.barebones]:
-        env["SKIP"] += ",test"
     commit_msg = (
         "Initial commit" if config[ConfigKey.barebones] else "chore: initial commit"
     )
@@ -1163,6 +1171,9 @@ VERSION_PY = r"""__version__ = "0.0.0"  # managed by `poetry-dynamic-versioning`
 """
 
 THEME_OVERRIDE_MAIN = r"""!!!theme_override_main.html!!!
+"""
+
+TEST_DOCTESTS_TEMPLATE = r"""!!!test_doctests.template.py!!!
 """
 
 

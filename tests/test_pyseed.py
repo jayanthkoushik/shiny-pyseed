@@ -1,5 +1,6 @@
 import contextlib
 import os
+import re
 import subprocess
 import sys
 import textwrap
@@ -729,6 +730,7 @@ class _BaseTestCreateProject(TestCase):
             pyseed.ConfigKey.add_deps: "",
             pyseed.ConfigKey.add_dev_deps: "",
             pyseed.ConfigKey.no_github: False,
+            pyseed.ConfigKey.no_doctests: False,
         }
 
     def tearDown(self):
@@ -756,6 +758,7 @@ class TestInitProject(_BaseTestCreateProject):
                 "src/test_project/_version.py",
                 "src/test_project/py.typed",
                 "tests/__init__.py",
+                "tests/test_doctests.py",
                 "www/theme/overrides/main.html",
                 ".commitlintrc.yaml",
                 ".cspell.json",
@@ -850,7 +853,7 @@ class TestInitProject(_BaseTestCreateProject):
             with self.subTest(fname):
                 self.assertFalse((project_dir / fname).exists())
 
-    def test_init_project_does_not_added_suppressed_files(self):
+    def test_init_project_does_not_add_suppressed_files(self):
         for i, barebones in enumerate([False, True]):
             with self.subTest(barebones=barebones):
                 if i == 1:
@@ -859,6 +862,7 @@ class TestInitProject(_BaseTestCreateProject):
                 self.config[pyseed.ConfigKey.barebones] = barebones
                 self.config[pyseed.ConfigKey.add_mit_license] = False
                 self.config[pyseed.ConfigKey.add_py_typed] = False
+                self.config[pyseed.ConfigKey.no_doctests] = True
 
                 if barebones:
                     for key in pyseed.BAREBONES_MODE_IGNORED_CONFIG_KEYS:
@@ -872,6 +876,8 @@ class TestInitProject(_BaseTestCreateProject):
 
                 license_text = (project_dir / "LICENSE.md").read_text().strip()
                 self.assertEqual(license_text, "")
+
+                self.assertFalse((project_dir / "tests" / "test_doctests.py").exists())
 
     @skipUnless(
         HAVE_TOML and HAVE_YAML, "need tomllib and pyyaml to test template renders"
@@ -1047,6 +1053,34 @@ class TestCreateProject(_BaseTestCreateProject):
             for pkg in ["requests", "flask", "black"]:
                 with self.subTest(no_github=no_github, package=pkg):
                     self.assertIn(pkg, installed_pkgs)
+
+            project_dir = Path(self.tempdir.name) / self.project_name
+            (project_dir / "src" / "test_project" / "foo.py").write_text(
+                textwrap.dedent('''
+                def foo(x, y):
+                    """Do foo.
+
+                    Examples:
+                        >>> from test_project.foo import foo
+                        >>> foo(1, 2)
+                        3
+
+                    """
+                    return x + y
+                ''')
+            )
+            test_doctests_path = project_dir / "tests" / "test_doctests.py"
+            test_doctests_py = test_doctests_path.read_text()
+            test_doctests_path.write_text(
+                re.sub(
+                    r"DOCTEST_MODULES = .*\n",
+                    "DOCTEST_MODULES = {test_project: ['foo.py']}\n",
+                    test_doctests_py,
+                )
+            )
+
+            pdone = pyseed.vrun(["poetry", "run", "python", "-m", "unittest"])
+            self.assertEqual(pdone.returncode, 0)
 
     def test_create_project_runs_without_error_in_barebones_mode(self):
         self.config[pyseed.ConfigKey.barebones] = True
