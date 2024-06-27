@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.1.1](https://github.com/jayanthkoushik/shiny-pyseed/compare/v1.1.0...v1.1.1) (2024-06-27)
+
+
+### Features
+
+* show note about barebones mode only in non-interactive mode ([2fdd791](https://github.com/jayanthkoushik/shiny-pyseed/commit/2fdd791538354798bd594dc0d0b913c84ef7d30b))
+* show url when asking for release token ([aa1eb61](https://github.com/jayanthkoushik/shiny-pyseed/commit/aa1eb61c351a9906a74907573e210ecea1706fac))
+
 ## [1.1.0](https://github.com/jayanthkoushik/shiny-pyseed/compare/v1.0.3...v1.1.0) (2024-06-25)
 
 
