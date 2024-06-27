@@ -393,6 +393,15 @@ class TestStrConfigKeySpec(TestCase):
         args = argparser.parse_args([])
         self.assertHasAttrWithValue(args, "dummy_param", None)
 
+    def test_str_config_key_adds_note_about_barebones_iff_in_ignored_list(self):
+        argparser = ArgumentParser(add_help=False, usage="")
+        pyseed.ConfigKey.url.value.add_arg_to_argparser(argparser)
+        self.assertIn("ignored in barebones mode", argparser.format_help())
+
+        argparser = ArgumentParser(add_help=False, usage="")
+        pyseed.ConfigKey.description.value.add_arg_to_argparser(argparser)
+        self.assertNotIn("ignored in barebones mode", argparser.format_help())
+
 
 class TestBoolConfigKeySpec(TestCase):
     def assertHasAttrWithValue(self, obj, attr, value):  # noqa: N802
@@ -445,6 +454,15 @@ class TestBoolConfigKeySpec(TestCase):
         mock_key.add_arg_to_argparser(argparser, no_default_required=True)
         args = argparser.parse_args([])
         self.assertHasAttrWithValue(args, "dummy_param", None)
+
+    def test_bool_config_key_adds_note_about_barebones_iff_in_ignored_list(self):
+        argparser = ArgumentParser(add_help=False, usage="")
+        pyseed.ConfigKey.no_github.value.add_arg_to_argparser(argparser)
+        self.assertIn("ignored in barebones mode", argparser.format_help())
+
+        argparser = ArgumentParser(add_help=False, usage="")
+        pyseed.ConfigKey.add_deps.value.add_arg_to_argparser(argparser)
+        self.assertNotIn("ignored in barebones mode", argparser.format_help())
 
 
 class TestGetConf(TestCase):
