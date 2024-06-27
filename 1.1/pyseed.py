@@ -406,9 +406,13 @@ class StrConfigKeySpec(ConfigKeySpec):
 
         name = self.name
         arg_name = f"-{name}" if len(name) == 1 else f"--{name.replace('_', '-')}"
+
         help_txt = self.description
+        if any(member.value is self for member in BAREBONES_MODE_IGNORED_CONFIG_KEYS):
+            help_txt += " (ignored in barebones mode)"
         if self.default is not None:
             help_txt += f" [default: '{self.default}']"
+
         arg_default = None if no_default_required else self.default
         arg_required = False if no_default_required else self.default is None
         argparser.add_argument(
@@ -442,9 +446,12 @@ class BoolConfigKeySpec(ConfigKeySpec):
         #   * If there is no default value, both the above arguments
         #     are added to a mutually exclusive group.
         true_arg = f"--{self.name.replace('_', '-')}"
-        true_help = self.description
+        help_txt = self.description
+        if any(member.value is self for member in BAREBONES_MODE_IGNORED_CONFIG_KEYS):
+            help_txt += " (ignored in barebones mode)"
+        true_help = help_txt
         false_arg = f"--no-{self.name.replace('_', '-')}"
-        false_help = f"do not {self.description}"
+        false_help = f"do not {help_txt}"
         if self.default is False:
             argparser.add_argument(
                 true_arg,
@@ -499,7 +506,7 @@ class ConfigKey(Enum):
     )
     max_py_version = StrConfigKeySpec(
         "pyM",
-        "maximum python3 version (for github actions; ignored in barebones mode)",
+        "maximum python3 version, for github actions",
         "3.12",
         validate_string_python_version,
     )
@@ -507,9 +514,7 @@ class ConfigKey(Enum):
         "py_typed", "add 'py.typed' file indicating typing support", True
     )
     update_pc_hooks_on_schedule = BoolConfigKeySpec(
-        "pc_cron",
-        "add support for updating pre-commit hooks monthly (ignored in barebones mode)",
-        True,
+        "pc_cron", "add support for updating pre-commit hooks monthly", True
     )
     add_deps = StrConfigKeySpec(
         "add_deps",
@@ -1023,6 +1028,7 @@ def setup_github(config: dict[ConfigKey, Any]):
         release_token = getpass(
             f"\ncreate a personal access token with 'contents:write' "
             f"and 'pull_requests:write' permissions for this project's repo "
+            f"(https://github.com/settings/personal-access-tokens/new) "
             f"({repo_owner}/{project_name}), and enter it here "
             f"(or leave empty to skip this step): "
         )
