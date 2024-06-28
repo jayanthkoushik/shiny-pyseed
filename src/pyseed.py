@@ -869,15 +869,7 @@ def create_project(config: dict[ConfigKey, Any]):
     dev_dependencies = ["pre-commit", "ruff", "mypy"]
     if not config[ConfigKey.barebones]:
         dev_dependencies.extend(
-            [
-                "sphinx",
-                "git+https://github.com/liran-funaro/sphinx-markdown-builder",
-                "mkdocstrings[python-legacy]",
-                "mkdocs-material",
-                "mkdocs-gen-files",
-                "mkdocs-literate-nav",
-                "git+https://github.com/jimporter/mike",
-            ]
+            ["sphinx", "git+https://github.com/liran-funaro/sphinx-markdown-builder"]
         )
     add_dev_deps = [
         dep
@@ -887,6 +879,16 @@ def create_project(config: dict[ConfigKey, Any]):
     if add_dev_deps:
         dev_dependencies.extend(add_dev_deps)
     vrun(["poetry", "add", "--group", "dev", *dev_dependencies])
+
+    if not config[ConfigKey.barebones]:
+        site_deps = [
+            "mkdocstrings[python-legacy]",
+            "mkdocs-material",
+            "mkdocs-gen-files",
+            "mkdocs-literate-nav",
+            "git+https://github.com/jimporter/mike",
+        ]
+        vrun(["poetry", "add", "--group", "site", *site_deps])
 
     add_deps = [
         dep
