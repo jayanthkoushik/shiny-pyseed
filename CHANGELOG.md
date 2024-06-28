@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [2.0.0](https://github.com/jayanthkoushik/shiny-pyseed/compare/v1.1.1...v2.0.0) (2024-06-28)
+
+
+### ⚠ BREAKING CHANGES
+
+* `release-new-version.yml` no longer has an option to
+disable PyPI publishing.
+
+### Features
+
+* improve prompt for reading release token ([585e8de](https://github.com/jayanthkoushik/shiny-pyseed/commit/585e8de708c25f62e26de4065b86e2545ec5e034))
+* split release workflow into separate modules ([a639092](https://github.com/jayanthkoushik/shiny-pyseed/commit/a639092ac8f00fe120ab68aedece5dd3b78666a3))
+
 ## [1.1.1](https://github.com/jayanthkoushik/shiny-pyseed/compare/v1.1.0...v1.1.1) (2024-06-27)
 
 
