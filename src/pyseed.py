@@ -761,6 +761,9 @@ def init_project(config: dict[ConfigKey, Any]):
         for fname, fdata in [
             ("check-pr.yml", CHECK_PR_WORKFLOW),
             ("release-new-version.yml", RELEASE_NEW_VERSION_WORKFLOW),
+            ("create-github-release.yml", CREATE_GITHUB_RELEASE_WORKFLOW),
+            ("publish-to-pypi.yml", PUBLISH_TO_PYPI_WORKFLOW),
+            ("deploy-project-site.yml", DEPLOY_PROJECT_SITE_WORKFLOW),
             ("run-tests.yml", run_tests_workflow),
             ("update-pre-commit-hooks.yml", update_pc_hooks_workflow),
         ]:
@@ -1147,6 +1150,15 @@ CHECK_PR_WORKFLOW = r"""!!!check_pr_workflow.yml!!!
 """
 
 RELEASE_NEW_VERSION_WORKFLOW = r"""!!!release_new_version_workflow.yml!!!
+"""
+
+CREATE_GITHUB_RELEASE_WORKFLOW = r"""!!!create_github_release_workflow.yml!!!
+"""
+
+PUBLISH_TO_PYPI_WORKFLOW = r"""!!!publish_to_pypi_workflow.yml!!!
+"""
+
+DEPLOY_PROJECT_SITE_WORKFLOW = r"""!!!deploy_project_site_workflow.yml!!!
 """
 
 RUN_TESTS_WORKFLOW_TEMPLATE = r"""!!!run_tests_workflow.template.yml!!!

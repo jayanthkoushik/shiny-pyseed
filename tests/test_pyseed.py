@@ -799,6 +799,9 @@ class TestInitProject(_BaseTestCreateProject):
                 "scripts/verify_pr_commits.py",
                 ".github/workflows/check-pr.yml",
                 ".github/workflows/release-new-version.yml",
+                ".github/workflows/create-github-release.yml",
+                ".github/workflows/publish-to-pypi.yml",
+                ".github/workflows/deploy-project-site.yml",
                 ".github/workflows/run-tests.yml",
                 ".github/workflows/update-pre-commit-hooks.yml",
             ]

@@ -763,6 +763,9 @@ def init_project(config: dict[ConfigKey, Any]):
         for fname, fdata in [
             ("check-pr.yml", CHECK_PR_WORKFLOW),
             ("release-new-version.yml", RELEASE_NEW_VERSION_WORKFLOW),
+            ("create-github-release.yml", CREATE_GITHUB_RELEASE_WORKFLOW),
+            ("publish-to-pypi.yml", PUBLISH_TO_PYPI_WORKFLOW),
+            ("deploy-project-site.yml", DEPLOY_PROJECT_SITE_WORKFLOW),
             ("run-tests.yml", run_tests_workflow),
             ("update-pre-commit-hooks.yml", update_pc_hooks_workflow),
         ]:
@@ -1588,9 +1591,7 @@ module.exports = config;
 
 """
 
-CHECK_PR_WORKFLOW = r"""name: Check pull request
-
-on: pull_request
+CHECK_PR_WORKFLOW = r"""on: pull_request
 
 jobs:
   run-pre-commit-hooks:
@@ -1604,8 +1605,7 @@ jobs:
           cache: poetry
       - run: poetry install --all-extras
       - run: SKIP=test poetry run pre-commit run --all-files
-      - name: Verify commit messages
-        run: ./scripts/verify_pr_commits.py
+      - run: ./scripts/verify_pr_commits.py
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -1654,13 +1654,6 @@ on:
         type: string
         required: false
         default: ""
-      publish-to-pypi:
-        description: >
-          Publish the project to PyPI. Requires a repository secret named
-          'PYPI_TOKEN' with a suitable API key.
-        type: boolean
-        required: false
-        default: true
 
 concurrency:
   group: ${{ github.workflow }}
@@ -1682,17 +1675,7 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-node@v4
 
-      - run: pipx install poetry
-      - uses: actions/setup-python@v5
-        with:
-          python-version-file: pyproject.toml
-          cache: poetry
-      - run: poetry self add "poetry-dynamic-versioning[plugin]"
-      - run: poetry install --all-extras
-
-      - run: SKIP=test poetry run pre-commit run --all-files
-
-      - name: Configure git
+      - name: Configure Git
         run: |
           git config --global user.name "${{ github.actor }}"
           git config --global user.email \
@@ -1708,36 +1691,90 @@ jobs:
 
       - run: git push --follow-tags origin master
 
+"""
+
+CREATE_GITHUB_RELEASE_WORKFLOW = r"""run-name: Create GitHub release for version ${{ github.ref_name }}
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
       - run: npx conventional-github-releaser -p angular
         env:
           CONVENTIONAL_GITHUB_RELEASER_TOKEN: ${{ secrets.REPO_PAT }}
 
+"""
+
+PUBLISH_TO_PYPI_WORKFLOW = r"""run-name: Publish version ${{ github.ref_name }} to PyPI
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: pipx install poetry
+      - run: poetry self add "poetry-dynamic-versioning[plugin]"
       - run: poetry build
       - run: poetry publish -u __token__ -p $PYPI_TOKEN
-        if: ${{ inputs.publish-to-pypi }}
         env:
           PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
 
-      - name: Get latest git tag
-        id: tag
-        run: echo "tag=$( git describe --tags --abbrev=0 )" >> $GITHUB_OUTPUT
-      - name: Extract major and minor versions of latest release
+"""
+
+DEPLOY_PROJECT_SITE_WORKFLOW = r"""run-name: Deploy project website for version ${{ github.ref_name }}
+
+on:
+  push:
+    tags:
+      - "v*"
+      - "!v*-*"
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.REPO_PAT }}
+          fetch-depth: 0
+      - run: pipx install poetry
+      - uses: actions/setup-python@v5
+        with:
+          python-version-file: pyproject.toml
+          cache: poetry
+      - run: poetry install
+      - name: Configure Git
+        run: |
+          git config --global user.name "${{ github.actor }}"
+          git config --global user.email \
+            "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
+      - name: Extract major and minor version
         id: version
         run: |
-          echo "version=$( echo ${{ steps.tag.outputs.tag }} \
+          echo "version=$( echo ${{ github.ref_name }} \
             | sed -E 's/^v([0-9]+)\.([0-9]+)\..*$/\1.\2/' )" >> $GITHUB_OUTPUT
-      - name: Publish site for new release
-        if: ${{ ! inputs.pre-release }}
-        run: |
-          poetry run mike set-default --allow-undefined latest
+      - run: poetry run mike set-default --allow-undefined latest
+      - run: |
           poetry run mike deploy --update-aliases --push --allow-empty \
             ${{ steps.version.outputs.version }} latest
 
 """
 
-RUN_TESTS_WORKFLOW_TEMPLATE = r"""name: Run unit tests
-
-on:
+RUN_TESTS_WORKFLOW_TEMPLATE = r"""on:
   workflow_call:
     inputs:
       fail-fast:
