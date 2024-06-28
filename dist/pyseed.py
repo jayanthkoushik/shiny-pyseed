@@ -1031,9 +1031,9 @@ def setup_github(config: dict[ConfigKey, Any]):
 
     with gh_api.setup_secrets_manager() as gh_secrets_manager:
         release_token = getpass(
-            f"\ncreate a personal access token with 'contents:write' "
+            f"\n[https://github.com/settings/personal-access-tokens/new] "
+            f"create a personal access token with 'contents:write' "
             f"and 'pull_requests:write' permissions for this project's repo "
-            f"(https://github.com/settings/personal-access-tokens/new) "
             f"({repo_owner}/{project_name}), and enter it here "
             f"(or leave empty to skip this step): "
         )
