@@ -87,8 +87,13 @@ creation) is skipped in non-interactive mode.**
 4. Write commit messages conforming to the [Conventional Commits](https://www.conventionalcommits.org)
    specification, and maintain a linear commit history.
 5. [Trigger](https://docs.github.com/en/actions/using-workflows/manually-running-a-workflow)
-   the `release-new-version` workflow to create a new release. If the
-   project was created with GitHub support disabled, use `scripts/release_new_version.py`.
+   the `release-new-version` workflow to create a new release.
+   Alternatively, run `scripts/commit_and_tag_version.py` and push the
+   generated commit and tag. This will trigger workflows to create a
+   GitHub release, deploy the project website, and publish the project
+   to PyPI.
+
+   If the project was created with GitHub support disabled, use `scripts/release_new_version.py`.
    Run `scripts/release_new_version.py -h` for options.
 6. If working on a new clone of the repository, initialize the project
    environment by running:
@@ -258,6 +263,9 @@ this:
 ├── .github/
 │   └── workflows/
 │       ├── check-pr.yml
+│       ├── create-github-release.yml
+│       ├── deploy-project-site.yml
+│       ├── publish-to-pypi.yml
 │       ├── release-new-version.yml
 │       ├── run-tests.yml
 │       └── update-pre-commit-hooks.yml
@@ -647,19 +655,25 @@ repository, and `PYPI_TOKEN` is an access key for PyPI.
 This is the workflow for creating a new release of the project. It needs
 to be [triggered manually](https://docs.github.com/en/actions/using-workflows/manually-running-a-workflow),
 for example using the Actions tab on GitHub. It requires the `REPO_PAT`
-and `PYPI_TOKEN` secrets.
+secret.
 
 This workflow will:
 
 - run the test workflow (`run-tests.yml`), and check if it passes
-- run pre-commit hooks on all files in the repository, and check if
-  there is no error
 - bump the version and update `CHANGELOG.md` using
   `scripts/commit_and_tag_version.py`, which is a wrapper around
   [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version)
-- create a GitHub release using [conventional-github-releaser](https://github.com/conventional-changelog/releaser-tools/tree/master/packages/conventional-github-releaser)
-- publish the project to PyPI
-- publish the project site
+* push the new commit and tag to master
+
+The tag push in turn triggers the three post release workflows.
+
+1. **`create-github-release.yml`**: Creates a GitHub release using
+   [conventional-github-releaser](https://github.com/conventional-changelog/releaser-tools/tree/master/packages/conventional-github-releaser).
+   It requires the `REPO_PAT` secret.
+2. **`publish-to-pypi.yml`**: Publishes the project to PyPI, using
+   `PYPI_TOKEN`.
+3. **`deploy-project-site.yml`**: Publishes the project website. It
+   requires `REPO_PAT`.
 
 **`check-pr.yml`**
 This workflow runs automatically on pull requests. It will call

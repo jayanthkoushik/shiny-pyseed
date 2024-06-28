@@ -1,0 +1,18 @@
+run-name: Publish version ${{ github.ref_name }} to PyPI
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: pipx install poetry
+      - run: poetry self add "poetry-dynamic-versioning[plugin]"
+      - run: poetry build
+      - run: poetry publish -u __token__ -p $PYPI_TOKEN
+        env:
+          PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}

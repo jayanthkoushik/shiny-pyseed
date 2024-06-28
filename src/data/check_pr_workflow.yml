@@ -1,5 +1,3 @@
-name: Check pull request
-
 on: pull_request
 
 jobs:
@@ -14,8 +12,7 @@ jobs:
           cache: poetry
       - run: poetry install --all-extras
       - run: SKIP=test poetry run pre-commit run --all-files
-      - name: Verify commit messages
-        run: ./scripts/verify_pr_commits.py
+      - run: ./scripts/verify_pr_commits.py
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
