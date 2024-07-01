@@ -91,10 +91,9 @@ creation) is skipped in non-interactive mode.**
    Alternatively, run `scripts/commit_and_tag_version.py` and push the
    generated commit and tag. This will trigger workflows to create a
    GitHub release, deploy the project website, and publish the project
-   to PyPI.
-
-   If the project was created with GitHub support disabled, use `scripts/release_new_version.py`.
-   Run `scripts/release_new_version.py -h` for options.
+   to PyPI. If the project was created with GitHub support disabled, use
+   `scripts/release_new_version.py`. Run `scripts/release_new_version.py -h`
+   for options.
 6. If working on a new clone of the repository, initialize the project
    environment by running:
 
