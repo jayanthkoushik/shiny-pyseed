@@ -734,12 +734,12 @@ creation) is skipped in non-interactive mode.</strong></p>
    Alternatively, run <code>scripts/commit_and_tag_version.py</code> and push the
    generated commit and tag. This will trigger workflows to create a
    GitHub release, deploy the project website, and publish the project
-   to PyPI.</li>
+   to PyPI. If the project was created with GitHub support disabled, use
+   <code>scripts/release_new_version.py</code>. Run <code>scripts/release_new_version.py -h</code>
+   for options.</li>
+<li>If working on a new clone of the repository, initialize the project
+   environment by running:</li>
 </ol>
-<p>If the project was created with GitHub support disabled, use <code>scripts/release_new_version.py</code>.
-   Run <code>scripts/release_new_version.py -h</code> for options.
-6. If working on a new clone of the repository, initialize the project
-   environment by running:</p>
 <div class="highlight"><pre><span></span><code>poetry<span class="w"> </span>install<span class="w"> </span>--all-extras
 poetry<span class="w"> </span>run<span class="w"> </span>pre-commit<span class="w"> </span>install
 </code></pre></div>
