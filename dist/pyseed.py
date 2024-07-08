@@ -1307,6 +1307,7 @@ plugins:
 
 markdown_extensions:
   - smarty
+  - admonition
   - pymdownx.highlight
   - pymdownx.superfences
   - pymdownx.caret
