@@ -218,9 +218,9 @@ The following operations are involved:
       permissions, used to create the GitHub repository. This token can
       be shared between projects, but it is highly recommended to create
       a separate token just for shiny-pyseed.
-   2. A token with 'contents:write' and 'pull_requests:write'
-      permissions for the project repository. This token is used for
-      creating GitHub releases and publishing the website.
+   2. A token with 'contents:write' permission for the project
+      repository. This token is used for creating GitHub releases and
+      publishing the website.
 2. The user will also need to create a PyPI access token for uploading
    releases to PyPI. For details, see <https://pypi.org/help/#apitoken>.
 3. The GitHub API is called to create a repository with the same name as
@@ -647,8 +647,8 @@ which are created by the optional second phase of the bootstrap script.
 They will need to be created manually if this phase was skipped. This
 section will indicate which of the following two secrets are needed by
 different workflows. `REPO_PAT` is a GitHub access token with
-'contents:write' and 'pull_requests:write' premissions for the
-repository, and `PYPI_TOKEN` is an access key for PyPI.
+'contents:write' premission for the repository, and `PYPI_TOKEN` is an
+access key for PyPI.
 
 **`release-new-version.yml`**
 This is the workflow for creating a new release of the project. It needs
@@ -686,7 +686,7 @@ windows-latest) and Python versions (configured during bootstrap).
 
 **`update-pre-commit-hooks.yml`**
 This workflow calls `pre-commit autoupdate` to update hooks to their
-latest version. If there are any changes, it will create a pull request;
-this requires the `REPO_PAT` secret. By default, this workflow will run
-automatically every month. This can be skipped during bootstrap;
-alternatively, update or remove the `schedule` section in the workflow.
+latest version. If there are any changes, it will create a pull request.
+By default, this workflow will run automatically every month. This can
+be skipped during bootstrap; alternatively, update or remove the
+`schedule` section in the workflow.
