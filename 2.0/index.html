@@ -853,9 +853,9 @@ The following operations are involved:</p>
       permissions, used to create the GitHub repository. This token can
       be shared between projects, but it is highly recommended to create
       a separate token just for shiny-pyseed.</li>
-<li>A token with &lsquo;contents:write&rsquo; and &lsquo;pull_requests:write&rsquo;
-      permissions for the project repository. This token is used for
-      creating GitHub releases and publishing the website.</li>
+<li>A token with &lsquo;contents:write&rsquo; permission for the project
+      repository. This token is used for creating GitHub releases and
+      publishing the website.</li>
 <li>The user will also need to create a PyPI access token for uploading
    releases to PyPI. For details, see <a href="https://pypi.org/help/#apitoken">https://pypi.org/help/#apitoken</a>.</li>
 <li>The GitHub API is called to create a repository with the same name as
@@ -1215,8 +1215,8 @@ which are created by the optional second phase of the bootstrap script.
 They will need to be created manually if this phase was skipped. This
 section will indicate which of the following two secrets are needed by
 different workflows. <code>REPO_PAT</code> is a GitHub access token with
-&lsquo;contents:write&rsquo; and &lsquo;pull_requests:write&rsquo; premissions for the
-repository, and <code>PYPI_TOKEN</code> is an access key for PyPI.</p>
+&lsquo;contents:write&rsquo; premission for the repository, and <code>PYPI_TOKEN</code> is an
+access key for PyPI.</p>
 <p><strong><code>release-new-version.yml</code></strong>
 This is the workflow for creating a new release of the project. It needs
 to be <a href="https://docs.github.com/en/actions/using-workflows/manually-running-a-workflow">triggered manually</a>,
@@ -1250,10 +1250,10 @@ on a matrix of operating systems (ubuntu-latest, macos-latest,
 windows-latest) and Python versions (configured during bootstrap).</p>
 <p><strong><code>update-pre-commit-hooks.yml</code></strong>
 This workflow calls <code>pre-commit autoupdate</code> to update hooks to their
-latest version. If there are any changes, it will create a pull request;
-this requires the <code>REPO_PAT</code> secret. By default, this workflow will run
-automatically every month. This can be skipped during bootstrap;
-alternatively, update or remove the <code>schedule</code> section in the workflow.</p>
+latest version. If there are any changes, it will create a pull request.
+By default, this workflow will run automatically every month. This can
+be skipped during bootstrap; alternatively, update or remove the
+<code>schedule</code> section in the workflow.</p>
 
 
 

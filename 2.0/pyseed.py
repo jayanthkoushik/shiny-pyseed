@@ -1033,9 +1033,8 @@ def setup_github(config: dict[ConfigKey, Any]):
         release_token = getpass(
             f"\n[https://github.com/settings/personal-access-tokens/new] "
             f"create a personal access token with 'contents:write' "
-            f"and 'pull_requests:write' permissions for this project's repo "
-            f"({repo_owner}/{project_name}), and enter it here "
-            f"(or leave empty to skip this step): "
+            f"permission for this project's repo ({repo_owner}/{project_name})"
+            f"and enter it here (or leave empty to skip this step): "
         )
         if release_token:
             gh_secrets_manager.upload_actions_secret(
@@ -1307,6 +1306,7 @@ plugins:
 
 markdown_extensions:
   - smarty
+  - admonition
   - pymdownx.highlight
   - pymdownx.superfences
   - pymdownx.caret
@@ -1822,7 +1822,6 @@ jobs:
       - run: pre-commit autoupdate
       - uses: peter-evans/create-pull-request@v6
         with:
-          token: ${{ secrets.REPO_PAT }}
           commit-message: "chore: update pre-commit hooks"
           branch: update-pre-commit-hooks
           title: Update pre-commit hooks
