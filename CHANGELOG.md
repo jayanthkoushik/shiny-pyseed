@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [2.0.2](https://github.com/jayanthkoushik/shiny-pyseed/compare/v2.0.1...v2.0.2) (2024-07-09)
+
+
+### Features
+
+* add admonition support for mkdocs ([60216a8](https://github.com/jayanthkoushik/shiny-pyseed/commit/60216a89b5e1b845803f8006b0b285589aaabb32))
+
+
+### Bug Fixes
+
+* fix `update-pre-commit-hooks` workflow ([8826b5f](https://github.com/jayanthkoushik/shiny-pyseed/commit/8826b5fdfc22a916611f0cda9531549a395f247a))
+
 ## [2.0.1](https://github.com/jayanthkoushik/shiny-pyseed/compare/v2.0.0...v2.0.1) (2024-07-01)
 
 ## [2.0.0](https://github.com/jayanthkoushik/shiny-pyseed/compare/v1.1.1...v2.0.0) (2024-06-28)
